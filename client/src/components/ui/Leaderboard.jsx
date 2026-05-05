@@ -86,12 +86,12 @@ const Leaderboard = () => {
 
               {/* Inspect Button */}
               <motion.button
-                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/profile/${player.uid}`)}
-                style={{ marginLeft: 8, width: 36, height: 36, borderRadius: 12, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFD700' }}
+                style={{ marginLeft: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', color: '#FFD700', fontWeight: 800, fontSize: 11, fontFamily: "'Quicksand', sans-serif", letterSpacing: 1 }}
                 title="Inspect Profile"
               >
-                <Eye size={16} />
+                <Eye size={14} /> INSPECT
               </motion.button>
             </motion.div>
           );

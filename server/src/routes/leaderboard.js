@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
                (SELECT COUNT(*) FROM match_history
                 WHERE players_json LIKE '%' || u.uid || '%') AS total_matches
              FROM users u
-             WHERE u.deactivated_at IS NULL
+             WHERE u.deactivated_at IS NULL AND u.account_type != 'guest'
              ORDER BY u.elo DESC, wins DESC
              LIMIT ?`,
             [limit]
