@@ -17,65 +17,48 @@ export const getCtx = () => {
     }
 };
 
-let bgmNodes = [];
+let bgmAudio = null;
 
 export const setBGM = (enabled, volume) => {
-    const ctx = getCtx();
-    if (!ctx) return;
-
     if (!enabled) {
-        bgmNodes.forEach(n => {
-            n.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
-            setTimeout(() => { n.osc.stop(); n.osc.disconnect(); n.gain.disconnect(); }, 1100);
-        });
-        bgmNodes = [];
+        if (bgmAudio) {
+            // Fade out
+            let vol = bgmAudio.volume;
+            const fadeOut = setInterval(() => {
+                if (vol > 0.05) {
+                    vol -= 0.05;
+                    bgmAudio.volume = vol;
+                } else {
+                    clearInterval(fadeOut);
+                    bgmAudio.pause();
+                    bgmAudio.currentTime = 0;
+                    bgmAudio = null;
+                }
+            }, 100);
+        }
         return;
     }
 
-    if (bgmNodes.length > 0) {
-        // Just update volume
-        bgmNodes.forEach(n => {
-            n.gain.gain.linearRampToValueAtTime((volume / 100) * n.maxVol, ctx.currentTime + 0.5);
-        });
+    if (bgmAudio) {
+        bgmAudio.volume = volume / 100;
         return;
     }
 
-    // Start ambient generative drone
-    const chords = [
-        { freq: 261.63, maxVol: 0.1 }, // C4
-        { freq: 329.63, maxVol: 0.08 }, // E4
-        { freq: 392.00, maxVol: 0.06 }, // G4
-        { freq: 523.25, maxVol: 0.04 }  // C5
-    ];
-
-    chords.forEach(c => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const lfo = ctx.createOscillator();
-        const lfoGain = ctx.createGain();
-
-        // Very slow drifting LFO for volume
-        lfo.type = 'sine';
-        lfo.frequency.value = 0.05 + Math.random() * 0.05; // 0.05 - 0.1 Hz
-        lfoGain.gain.value = c.maxVol * 0.5;
-        lfo.connect(lfoGain);
-        
-        // Base volume + LFO mod
-        gain.gain.value = 0;
-        lfoGain.connect(gain.gain);
-
-        osc.type = 'sine';
-        osc.frequency.value = c.freq;
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        lfo.start();
-        
-        // Fade in
-        gain.gain.linearRampToValueAtTime((volume / 100) * c.maxVol, ctx.currentTime + 2);
-        
-        bgmNodes.push({ osc, gain, lfo, lfoGain, maxVol: c.maxVol });
+    bgmAudio = new Audio('/song.mp3');
+    bgmAudio.loop = true;
+    bgmAudio.volume = volume / 100;
+    
+    // Play with a promise catch to handle browser auto-play policies
+    bgmAudio.play().catch((e) => {
+        console.warn('Audio auto-play prevented by browser', e);
+        // Will try playing on next user interaction
+        const tryPlay = () => {
+            if (bgmAudio) {
+                bgmAudio.play().catch(() => {});
+                document.removeEventListener('click', tryPlay);
+            }
+        };
+        document.addEventListener('click', tryPlay);
     });
 };
 
