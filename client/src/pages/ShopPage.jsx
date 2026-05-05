@@ -91,15 +91,21 @@ const ShopPage = () => {
   const [cat, setCat]       = useState('all');
   const [buying, setBuying] = useState(null);
 
-  // Track owned locally (in real app this comes from server)
-  const [owned, setOwned] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('lf_owned_skins') || '[]'); }
-    catch { return []; }
-  });
+  const [owned, setOwned] = useState([]);
+
+  useEffect(() => {
+    const key = `lf_owned_skins_${user?.uid || 'guest'}`;
+    try {
+      setOwned(JSON.parse(localStorage.getItem(key) || '[]'));
+    } catch {
+      setOwned([]);
+    }
+  }, [user?.uid]);
 
   const saveOwned = (list) => {
+    const key = `lf_owned_skins_${user?.uid || 'guest'}`;
     setOwned(list);
-    localStorage.setItem('lf_owned_skins', JSON.stringify(list));
+    localStorage.setItem(key, JSON.stringify(list));
   };
 
   const isOwned = (item) => item.rarity === 'free' || owned.includes(item.id);

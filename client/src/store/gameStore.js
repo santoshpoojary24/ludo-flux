@@ -57,7 +57,10 @@ export const useGameStore = create(
 
       logout: () => {
         localStorage.removeItem('token');
-        set({ user: null, token: null, sessionId: null, roomCode: null, gameState: null, localPlayers: null });
+        set({
+          user: null, token: null, sessionId: null, roomCode: null, gameState: null, localPlayers: null,
+          cosmetics: { diceSkin: 'classic', boardSkin: 'walnut', tokenSkin: 'jewel' }
+        });
       },
 
       updateUserCoins: (coins) => {

@@ -87,11 +87,29 @@ const TokenPreview = ({ skin }) => (
 /* ── Main Page ────────────────────────────────────────────────────── */
 const CollectionPage = () => {
   const navigate = useNavigate();
-  const { cosmetics, setCosmetic, addToast } = useGameStore();
+  const { user, cosmetics, setCosmetic, addToast } = useGameStore();
   const [cat, setCat] = useState('dice');
 
+  const [owned, setOwned] = useState([]);
+
+  useEffect(() => {
+    const key = `lf_owned_skins_${user?.uid || 'guest'}`;
+    try {
+      setOwned(JSON.parse(localStorage.getItem(key) || '[]'));
+    } catch {
+      setOwned([]);
+    }
+  }, [user?.uid]);
+
   const currentCat  = CATS.find(c => c.id === cat);
-  const skins       = Object.entries(ALL_SKINS[cat]);
+  
+  // Dynamically map over skins and apply the 'unlocked' state based on the user's owned list
+  const skins = Object.entries(ALL_SKINS[cat]).map(([id, skin]) => {
+    const isFree = skin.unlocked === true;
+    const shopId = `${currentCat.id}_${id}`;
+    return [id, { ...skin, unlocked: isFree || owned.includes(shopId) }];
+  });
+
   const selectedId  = cosmetics?.[currentCat.key] || Object.keys(ALL_SKINS[cat])[0];
   const totalSkins  = skins.length;
   const unlockedCnt = skins.filter(([,s]) => s.unlocked).length;
