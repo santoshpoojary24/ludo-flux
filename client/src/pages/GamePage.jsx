@@ -10,11 +10,9 @@ import ChatDrawer from '../components/chat/ChatDrawer';
 import Scoreboard from '../components/ui/Scoreboard';
 import FriendsList from '../components/dashboard/FriendsList';
 import { QRCodeCanvas } from 'qrcode.react';
-import ConfettiCanvas from '../components/ui/ConfettiCanvas';
 import {
   ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings
 } from 'lucide-react';
-
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -45,8 +43,6 @@ const GamePage = () => {
   const [showStartAnim, setShowStartAnim] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-
   const prevStatusRef = useRef(gameState?.status);
 
   // Critical: use refs to avoid stale closures in effects
@@ -64,17 +60,11 @@ const GamePage = () => {
   useEffect(() => {
     if (prevStatusRef.current === 'waiting' && gameState?.status === 'playing') {
       setShowStartAnim(true);
-      startTimeRef.current = Date.now();
+      startTimeRef.current = Date.now(); // Reset timer on start
       setTimeout(() => setShowStartAnim(false), 2500);
     }
-    // Trigger confetti when winner appears
-    if (!prevStatusRef.current?.winner && gameState?.winner) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-    }
     prevStatusRef.current = gameState?.status;
-  }, [gameState?.status, gameState?.winner]);
-
+  }, [gameState?.status]);
 
   // ── Socket event handlers ──────────────────────────────────────────────────
   useEffect(() => {
@@ -347,9 +337,7 @@ const GamePage = () => {
 
   return (
     <div style={styles.page}>
-      <ConfettiCanvas active={showConfetti} duration={4500} />
       {gameState.status === 'playing' && <Scoreboard startTime={startTimeRef.current} />}
-
 
       <AnimatePresence>
         {showStartAnim && (
@@ -560,27 +548,13 @@ const GamePage = () => {
         {gameState.status === 'playing' && (
           <AnimatePresence mode="wait">
             {gameState.winner ? (
-              <>
-                {/* Full-screen blur + colour overlay */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  style={{
-                    position: 'fixed', inset: 0, zIndex: 990, pointerEvents: 'none',
-                    background: `radial-gradient(ellipse at center, var(--token-${gameState.winner})22 0%, rgba(0,0,0,0.78) 70%)`,
-                    backdropFilter: 'blur(6px)',
-                  }}
-                />
-
-                <motion.div
-                  key="winner"
-                  initial={{ scale: 0.6, opacity: 0, y: 30 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.25 }}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, position: 'relative', zIndex: 995 }}
-                >
-
+              <motion.div
+                key="winner"
+                initial={{ scale: 0.6, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 180, damping: 18 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}
+              >
                 <div style={{
                   ...styles.winCard,
                   borderColor: `var(--token-${gameState.winner})`,
@@ -625,14 +599,12 @@ const GamePage = () => {
                   )}
                 </div>
               </motion.div>
-              </>
             ) : (
-
               <motion.div
                 key="playing"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, position: 'relative' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}
               >
                 <Dice
                   value={diceValue}
@@ -642,30 +614,7 @@ const GamePage = () => {
                   playerColor={myTokenColor}
                 />
 
-                {/* Roll-again badge */}
-                <AnimatePresence>
-                  {diceValue === 6 && isMyTurn && (
-                    <motion.div
-                      key="rollagain"
-                      initial={{ scale: 0, y: -12, opacity: 0 }}
-                      animate={{ scale: [0, 1.2, 1], y: 0, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0, y: -8 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                      style={{
-                        background: 'linear-gradient(135deg,#7c3aed,#a855f7)',
-                        color: '#fff', fontFamily: "'Cinzel',serif",
-                        fontWeight: 900, fontSize: 12, letterSpacing: 1.5,
-                        padding: '5px 14px', borderRadius: 99,
-                        boxShadow: '0 0 18px rgba(167,139,250,0.6)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      🎲 ROLL AGAIN!
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </motion.div>
-
             )}
           </AnimatePresence>
         )}
