@@ -23,7 +23,7 @@ const Leaderboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/leaderboard`)
+    fetch(`${API_URL}/api/leaderboard?t=${Date.now()}`)
       .then(res => res.json())
       .then(data => {
         setPlayers(data);
@@ -87,7 +87,7 @@ const Leaderboard = () => {
               {/* Inspect Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(`/profile/${player.uid}`)}
+                onClick={() => navigate(`/player/${player.uid}`)}
                 style={{ marginLeft: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', color: '#FFD700', fontWeight: 800, fontSize: 11, fontFamily: "'Quicksand', sans-serif", letterSpacing: 1 }}
                 title="Inspect Profile"
               >
