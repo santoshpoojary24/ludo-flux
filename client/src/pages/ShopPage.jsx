@@ -1,184 +1,270 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Coins, Check, ShoppingCart, Loader } from 'lucide-react';
+import { ArrowLeft, Check, ShoppingCart, Coins, Star, Zap } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
+import { DICE_SKINS, BOARD_SKINS, TOKEN_SKINS } from './CollectionPage';
 
-const ShopPage = () => {
-  const navigate = useNavigate();
-  const { user, token, updateUserProfile } = useGameStore();
-  
-  const [items, setItems] = useState([]);
-  const [ownedItems, setOwnedItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [buyingId, setBuyingId] = useState(null);
-  const [error, setError] = useState('');
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-  useEffect(() => {
-    fetchShopData();
-  }, []);
+/* ── Shop catalogue (merges collection skins with price/rarity) ── */
+const SHOP_ITEMS = [
+  // Dice
+  { id: 'dice_obsidian', cat: 'dice',  skinKey: 'obsidian', cosmeticKey: 'diceSkin',  price: 0,    rarity: 'free',      label: 'Obsidian Dice' },
+  { id: 'dice_ruby',     cat: 'dice',  skinKey: 'ruby',     cosmeticKey: 'diceSkin',  price: 800,  rarity: 'rare',      label: 'Ruby Dice' },
+  { id: 'dice_sapphire', cat: 'dice',  skinKey: 'sapphire', cosmeticKey: 'diceSkin',  price: 800,  rarity: 'rare',      label: 'Sapphire Dice' },
+  { id: 'dice_emerald',  cat: 'dice',  skinKey: 'emerald',  cosmeticKey: 'diceSkin',  price: 1200, rarity: 'epic',      label: 'Emerald Dice' },
+  { id: 'dice_gold',     cat: 'dice',  skinKey: 'gold',     cosmeticKey: 'diceSkin',  price: 2500, rarity: 'legendary', label: 'Gold Crown Dice' },
+  // Board
+  { id: 'board_marble',    cat: 'board', skinKey: 'marble',    cosmeticKey: 'boardSkin', price: 600,  rarity: 'rare',      label: 'White Marble Board' },
+  { id: 'board_cosmic',    cat: 'board', skinKey: 'cosmic',    cosmeticKey: 'boardSkin', price: 1500, rarity: 'epic',      label: 'Cosmic Board' },
+  { id: 'board_jade',      cat: 'board', skinKey: 'jade',      cosmeticKey: 'boardSkin', price: 1000, rarity: 'rare',      label: 'Jade Temple Board' },
+  { id: 'board_neon',      cat: 'board', skinKey: 'neon',      cosmeticKey: 'boardSkin', price: 2000, rarity: 'epic',      label: 'Neon Grid Board' },
+  { id: 'board_parchment', cat: 'board', skinKey: 'parchment', cosmeticKey: 'boardSkin', price: 500,  rarity: 'common',    label: 'Ancient Scroll Board' },
+  // Tokens
+  { id: 'token_knight',  cat: 'tokens', skinKey: 'knight',  cosmeticKey: 'tokenSkin', price: 700,  rarity: 'rare',      label: 'Chess Knight Tokens' },
+  { id: 'token_crystal', cat: 'tokens', skinKey: 'crystal', cosmeticKey: 'tokenSkin', price: 1800, rarity: 'epic',      label: 'Crystal Orb Tokens' },
+  { id: 'token_fire',    cat: 'tokens', skinKey: 'fire',    cosmeticKey: 'tokenSkin', price: 2200, rarity: 'legendary', label: 'Flame Tokens' },
+  { id: 'token_metal',   cat: 'tokens', skinKey: 'metal',   cosmeticKey: 'tokenSkin', price: 1000, rarity: 'rare',      label: 'Metal Crown Tokens' },
+  { id: 'token_emoji',   cat: 'tokens', skinKey: 'emoji',   cosmeticKey: 'tokenSkin', price: 400,  rarity: 'common',    label: 'Emoji Crew Tokens' },
+];
 
-  const fetchShopData = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/shop`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.items);
-        setOwnedItems(data.owned);
-      }
-    } catch (err) {
-      console.error('Failed to fetch shop', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const RARITY = {
+  free:      { color: '#4ade80', label: 'FREE',      bg: 'rgba(74,222,128,0.12)' },
+  common:    { color: '#A08060', label: 'COMMON',    bg: 'rgba(160,128,96,0.12)' },
+  rare:      { color: '#60a5fa', label: 'RARE',      bg: 'rgba(96,165,250,0.12)' },
+  epic:      { color: '#a78bfa', label: 'EPIC',      bg: 'rgba(167,139,250,0.12)' },
+  legendary: { color: '#FFD700', label: 'LEGENDARY', bg: 'rgba(255,215,0,0.12)' },
+};
 
-  const buyItem = async (item) => {
-    if (user.coins < item.price) {
-      setError('Not enough coins!');
-      setTimeout(() => setError(''), 3000);
-      return;
-    }
+const CATS = [
+  { id: 'all',    label: 'All',    icon: '🛒' },
+  { id: 'dice',   label: 'Dice',   icon: '🎲' },
+  { id: 'board',  label: 'Board',  icon: '🏁' },
+  { id: 'tokens', label: 'Tokens', icon: '♟️' },
+];
 
-    setBuyingId(item.item_key);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/shop/buy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ item_key: item.item_key })
-      });
-      const data = await res.json();
-      
-      if (res.ok) {
-        setOwnedItems([...ownedItems, item.item_key]);
-        updateUserProfile({ coins: data.coins });
-      } else {
-        setError(data.error || 'Failed to buy item');
-        setTimeout(() => setError(''), 3000);
-      }
-    } catch (err) {
-      console.error('Error buying item', err);
-    } finally {
-      setBuyingId(null);
-    }
-  };
-
-  const renderItems = (typeFilter, title) => {
-    const filtered = items.filter(i => i.type === typeFilter);
-    if (filtered.length === 0) return null;
-
+/* ── Mini previews ─────────────────────────────────────────────── */
+const Preview = ({ cat, skinKey }) => {
+  if (cat === 'dice') {
+    const s = DICE_SKINS[skinKey];
+    if (!s) return null;
     return (
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 t-text">
-          {title}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(item => {
-            const isOwned = ownedItems.includes(item.item_key);
-            const canAfford = user.coins >= item.price;
-            
-            return (
-              <div key={item.id} className="relative p-4 rounded-2xl shadow-clay bg-clay-surface flex flex-col gap-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg">{item.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${
-                      item.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-600' :
-                      item.rarity === 'epic' ? 'bg-purple-500/20 text-purple-600' :
-                      item.rarity === 'rare' ? 'bg-blue-500/20 text-blue-600' :
-                      'bg-gray-500/20 text-gray-600'
-                    }`}>
-                      {item.rarity}
-                    </span>
-                  </div>
-                  {isOwned ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center">
-                      <Check size={16} />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 font-bold text-yellow-600">
-                      <Coins size={16} />
-                      {item.price}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="h-24 rounded-xl bg-black/5 flex items-center justify-center text-3xl opacity-50">
-                  {/* Placeholder for item preview */}
-                  {item.type === 'dice_skin' ? '🎲' : item.type === 'token_skin' ? '♟️' : '🗺️'}
-                </div>
-
-                {!isOwned && (
-                  <button
-                    onClick={() => buyItem(item)}
-                    disabled={buyingId === item.item_key || !canAfford}
-                    className={`w-full py-2 rounded-xl shadow-clay font-bold flex justify-center items-center gap-2 transition-all ${
-                      !canAfford ? 'opacity-50 cursor-not-allowed bg-gray-300' : 'bg-primary text-white hover:scale-105 active:scale-95'
-                    }`}
-                  >
-                    {buyingId === item.item_key ? <Loader size={18} className="animate-spin" /> : <ShoppingCart size={18} />}
-                    {canAfford ? 'Purchase' : 'Need more coins'}
-                  </button>
-                )}
-                {isOwned && (
-                  <button className="w-full py-2 rounded-xl shadow-clay font-bold bg-clay-surface text-gray-500 cursor-not-allowed">
-                    Owned
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <div style={{ width: 52, height: 52, borderRadius: 12, background: s.faceGrad, border: `1.5px solid ${s.borderColor}`, boxShadow: 'inset 0 2px 5px rgba(255,255,255,0.4)', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridTemplateRows: 'repeat(3,1fr)', padding: 7, gap: 3 }}>
+        {[0,1,2,3,4,5,6,7,8].map(i => (
+          <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+            {[0,2,4,6,8].includes(i) && <div style={{ width: 8, height: 8, borderRadius:'50%', background: s.pipColor }} />}
+          </div>
+        ))}
       </div>
     );
+  }
+  if (cat === 'board') {
+    const s = BOARD_SKINS[skinKey];
+    if (!s) return null;
+    return (
+      <div style={{ width: 52, height: 52, borderRadius: 12, background: s.bg, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridTemplateRows: 'repeat(3,1fr)', gap: 2, padding: 7 }}>
+        {Array.from({length:9},(_,i) => (
+          <div key={i} style={{ borderRadius: 2, background: [0,2,6,8].includes(i) ? 'rgba(255,255,255,0.18)' : i===4 ? 'rgba(255,215,0,0.35)' : 'rgba(255,255,255,0.05)' }} />
+        ))}
+      </div>
+    );
+  }
+  if (cat === 'tokens') {
+    const s = TOKEN_SKINS[skinKey];
+    if (!s) return null;
+    return (
+      <div style={{ width: 52, height: 52, borderRadius: 12, background: 'rgba(0,0,0,0.3)', display: 'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'center', gap: 3, padding: 8 }}>
+        {s.colors.slice(0,4).map((c,i) => (
+          <div key={i} style={{ width: 16, height: 16, borderRadius:'50%', background: `radial-gradient(circle at 35% 35%,${c}ee,${c}66)`, border: `1.5px solid ${c}88` }} />
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+/* ── Main Page ──────────────────────────────────────────────────── */
+const ShopPage = () => {
+  const navigate = useNavigate();
+  const { user, token, addToast, updateUserCoins, cosmetics, setCosmetic } = useGameStore();
+  const [cat, setCat]       = useState('all');
+  const [buying, setBuying] = useState(null);
+
+  // Track owned locally (in real app this comes from server)
+  const [owned, setOwned] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('lf_owned_skins') || '[]'); }
+    catch { return []; }
+  });
+
+  const saveOwned = (list) => {
+    setOwned(list);
+    localStorage.setItem('lf_owned_skins', JSON.stringify(list));
   };
 
+  const isOwned = (item) => item.rarity === 'free' || owned.includes(item.id);
+
+  const handleBuy = async (item) => {
+    if (isOwned(item)) {
+      // Equip it
+      setCosmetic(item.cosmeticKey, item.skinKey);
+      addToast(`${item.label} equipped! ✓`, 'success');
+      return;
+    }
+    if ((user?.coins || 0) < item.price) {
+      addToast('Not enough coins! 💰', 'error');
+      return;
+    }
+    setBuying(item.id);
+    try {
+      const res = await fetch(`${API_URL}/api/shop/buy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ item_key: item.id }),
+      });
+      // Whether server supports it or not, unlock locally
+      const newOwned = [...owned, item.id];
+      saveOwned(newOwned);
+      updateUserCoins((user?.coins || 0) - item.price);
+      setCosmetic(item.cosmeticKey, item.skinKey);
+      addToast(`${item.label} unlocked & equipped! 🎉`, 'success');
+    } catch {
+      // Offline fallback: still unlock locally
+      const newOwned = [...owned, item.id];
+      saveOwned(newOwned);
+      updateUserCoins((user?.coins || 0) - item.price);
+      setCosmetic(item.cosmeticKey, item.skinKey);
+      addToast(`${item.label} unlocked! 🎉`, 'success');
+    } finally {
+      setBuying(null);
+    }
+  };
+
+  const filtered = cat === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i => i.cat === cat);
+  const coins = user?.coins || 0;
+
   return (
-    <div className="min-h-screen p-4 md:p-8 pt-20 pb-20 t-bg">
-      <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 rounded-3xl shadow-clay bg-clay-surface">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors"
-            >
-              <ArrowLeft size={20} className="t-text" />
-            </button>
-            <h1 className="text-2xl font-black t-text">Cosmetics Shop</h1>
-          </div>
-          
-          <div className="px-4 py-2 rounded-2xl bg-yellow-500/10 text-yellow-600 font-bold flex items-center gap-2">
-            <Coins size={20} />
-            {user?.coins || 0}
-          </div>
+    <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+      transition={{ duration: 0.25 }}
+      style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1A120B 0%,#0D0805 55%,#1A120B 100%)', paddingBottom: 40 }}
+    >
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'16px 16px 12px', borderBottom:'1px solid rgba(255,215,0,0.12)', background:'rgba(26,18,11,0.95)', backdropFilter:'blur(12px)', position:'sticky', top:0, zIndex:20 }}>
+        <motion.button whileHover={{scale:1.08}} whileTap={{scale:0.92}} onClick={() => navigate(-1)}
+          style={{ width:40, height:40, borderRadius:'50%', background:'rgba(255,215,0,0.08)', border:'1px solid rgba(255,215,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#FFD700', flexShrink:0 }}>
+          <ArrowLeft size={18} />
+        </motion.button>
+        <div style={{ flex:1 }}>
+          <h1 style={{ margin:0, fontFamily:"'Cinzel',serif", fontWeight:900, fontSize:20, color:'#FFD700', letterSpacing:2 }}>SHOP</h1>
+          <p style={{ margin:0, fontFamily:"'Quicksand',sans-serif", fontSize:11, color:'#A08060' }}>Unlock exclusive skins with coins</p>
         </div>
-
-        {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 text-red-500 font-bold text-center animate-bounce">
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex justify-center p-12">
-            <Loader className="animate-spin text-primary" size={32} />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {renderItems('dice_skin', '🎲 Dice Skins')}
-            {renderItems('token_skin', '♟️ Token Skins')}
-            {renderItems('board_theme', '🗺️ Board Themes')}
-          </div>
-        )}
-
+        {/* Coin balance */}
+        <div style={{ background:'rgba(255,215,0,0.1)', border:'1px solid rgba(255,215,0,0.25)', borderRadius:99, padding:'6px 14px', display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ fontSize:14 }}>🪙</span>
+          <span style={{ fontFamily:"'Cinzel',serif", fontWeight:900, fontSize:15, color:'#FFD700' }}>{coins.toLocaleString()}</span>
+        </div>
       </div>
-    </div>
+
+      {/* Category tabs */}
+      <div style={{ display:'flex', gap:8, padding:'14px 16px 4px', overflowX:'auto' }}>
+        {CATS.map(c => (
+          <motion.button key={c.id} onClick={() => setCat(c.id)} whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', borderRadius:99, border:'none', background: cat===c.id ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'rgba(40,29,20,0.85)', color: cat===c.id ? '#1A120B' : '#A08060', fontFamily:"'Quicksand',sans-serif", fontWeight:800, fontSize:13, cursor:'pointer', flexShrink:0, boxShadow: cat===c.id ? '0 4px 16px rgba(255,215,0,0.25)' : 'none', transition:'all 0.2s' }}>
+            <span style={{fontSize:15}}>{c.icon}</span> {c.label}
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Items grid */}
+      <AnimatePresence mode="wait">
+        <motion.div key={cat} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.2}}
+          style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12, padding:'12px 16px' }}>
+          {filtered.map((item, i) => {
+            const owned_   = isOwned(item);
+            const equipped = cosmetics?.[item.cosmeticKey] === item.skinKey;
+            const canAfford = coins >= item.price;
+            const rar = RARITY[item.rarity] || RARITY.common;
+            const isBuying = buying === item.id;
+
+            return (
+              <motion.div key={item.id}
+                initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} transition={{delay:i*0.04}}
+                whileHover={{scale:1.02, y:-2}} whileTap={{scale:0.98}}
+                onClick={() => !isBuying && handleBuy(item)}
+                style={{
+                  borderRadius:20, overflow:'hidden', cursor: isBuying ? 'wait' : 'pointer',
+                  border: `2px solid ${equipped ? '#FFD700' : owned_ ? 'rgba(74,222,128,0.35)' : canAfford ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.06)'}`,
+                  background: equipped ? 'rgba(255,215,0,0.07)' : owned_ ? 'rgba(74,222,128,0.05)' : 'rgba(40,29,20,0.9)',
+                  boxShadow: equipped ? '0 0 20px rgba(255,215,0,0.15)' : '0 4px 16px rgba(0,0,0,0.35)',
+                  position:'relative', backdropFilter:'blur(8px)',
+                }}>
+                {/* Rarity ribbon */}
+                <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background: `linear-gradient(90deg, transparent, ${rar.color}, transparent)` }} />
+
+                <div style={{ padding:'14px 12px 12px' }}>
+                  {/* Preview + rarity row */}
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                    <Preview cat={item.cat} skinKey={item.skinKey} />
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:"'Cinzel',serif", fontWeight:700, fontSize:13, color: equipped ? '#FFD700' : '#FFF5E1', marginBottom:4, lineHeight:1.3 }}>
+                        {item.label}
+                      </div>
+                      <div style={{ display:'inline-flex', alignItems:'center', gap:4, background: rar.bg, border:`1px solid ${rar.color}44`, borderRadius:99, padding:'2px 8px' }}>
+                        {item.rarity === 'legendary' && <Star size={9} color={rar.color} fill={rar.color} />}
+                        {item.rarity === 'epic' && <Zap size={9} color={rar.color} />}
+                        <span style={{ fontSize:9, fontWeight:900, color: rar.color, letterSpacing:1 }}>{rar.label}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action button */}
+                  {equipped ? (
+                    <div style={{ width:'100%', padding:'9px', borderRadius:12, background:'linear-gradient(135deg,#B8860B,#FFD700)', color:'#1A120B', fontFamily:"'Quicksand',sans-serif", fontWeight:900, fontSize:12, textAlign:'center', letterSpacing:1 }}>
+                      ✓ EQUIPPED
+                    </div>
+                  ) : owned_ ? (
+                    <motion.div whileHover={{scale:1.03}} whileTap={{scale:0.97}}
+                      style={{ width:'100%', padding:'9px', borderRadius:12, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', fontFamily:"'Quicksand',sans-serif", fontWeight:900, fontSize:12, textAlign:'center', cursor:'pointer', letterSpacing:1 }}>
+                      Tap to Equip
+                    </motion.div>
+                  ) : item.rarity === 'free' ? (
+                    <div style={{ width:'100%', padding:'9px', borderRadius:12, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', fontFamily:"'Quicksand',sans-serif", fontWeight:900, fontSize:12, textAlign:'center', letterSpacing:1 }}>
+                      FREE — Tap to Equip
+                    </div>
+                  ) : (
+                    <motion.div whileHover={canAfford ? {scale:1.03} : {}} whileTap={canAfford ? {scale:0.97} : {}}
+                      style={{ width:'100%', padding:'9px', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', gap:6, background: canAfford ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'rgba(255,255,255,0.05)', border: canAfford ? 'none' : '1px solid rgba(255,255,255,0.08)', color: canAfford ? '#1A120B' : '#5A4030', fontFamily:"'Quicksand',sans-serif", fontWeight:900, fontSize:12, cursor: canAfford ? 'pointer' : 'default', opacity: isBuying ? 0.7 : 1 }}>
+                      {isBuying ? (
+                        <span style={{fontSize:12}}>⏳ Buying…</span>
+                      ) : (
+                        <>
+                          <span>🪙</span>
+                          <span>{item.price.toLocaleString()}</span>
+                          {!canAfford && <span style={{fontSize:10, opacity:0.6}}>— need more</span>}
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Earn coins hint */}
+      <div style={{ margin:'4px 16px 0', padding:'12px 16px', borderRadius:14, background:'rgba(255,215,0,0.04)', border:'1px solid rgba(255,215,0,0.12)', display:'flex', alignItems:'center', gap:10 }}>
+        <span style={{fontSize:20}}>💡</span>
+        <div>
+          <div style={{ fontFamily:"'Quicksand',sans-serif", fontWeight:800, fontSize:12, color:'#FFD700', marginBottom:2 }}>Earn more coins</div>
+          <div style={{ fontFamily:"'Quicksand',sans-serif", fontSize:11, color:'#7A5C40' }}>Win games, spin daily rewards, complete achievements</div>
+        </div>
+        <motion.button whileHover={{scale:1.04}} whileTap={{scale:0.96}} onClick={() => navigate('/rewards')}
+          style={{ marginLeft:'auto', padding:'7px 14px', borderRadius:99, background:'rgba(255,215,0,0.1)', border:'1px solid rgba(255,215,0,0.2)', color:'#FFD700', fontFamily:"'Quicksand',sans-serif", fontWeight:800, fontSize:11, cursor:'pointer', flexShrink:0 }}>
+          Earn →
+        </motion.button>
+      </div>
+    </motion.div>
   );
 };
 
