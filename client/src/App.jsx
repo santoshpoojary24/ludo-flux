@@ -11,10 +11,8 @@ import RewardsPage from './pages/RewardsPage';
 import { useGameStore } from './store/gameStore';
 import ToastContainer from './components/ui/ToastContainer';
 import SettingsPanel from './components/ui/SettingsPanel';
-import ThemeSelector from './components/ui/ThemeSelector';
 import { useSocket } from './hooks/useSocket';
 import { SOCKET_EVENTS } from './shared/socketEvents.js';
-import { Palette, Settings } from 'lucide-react';
 
 /* ── Smooth page transition wrapper ─────────────────────────────── */
 const PageWrapper = ({ children }) => (
@@ -29,15 +27,14 @@ const PageWrapper = ({ children }) => (
   </motion.div>
 );
 
-
 function App() {
-  const { token, user, roomCode, logout, setRoomCode, theme, updateUserProfile, toggleSettings, isSettingsOpen } = useGameStore();
+  const { token, user, roomCode, logout, setRoomCode, updateUserProfile, toggleSettings, isSettingsOpen } = useGameStore();
   const settings = useGameStore((state) => state.settings);
   const { socket } = useSocket();
   const location = useLocation();
   const [authChecked, setAuthChecked] = useState(false);
 
-  // ── Validate persisted token on startup ──────────────────────────────────
+  // ── Validate persisted token on startup ───────────────────────────
   useEffect(() => {
     const validate = async () => {
       if (token) {
@@ -47,15 +44,13 @@ function App() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) {
-            // Token invalid or expired — force logout
             logout();
           } else {
             const data = await res.json();
-            // Refresh user data from server (coins, elo, etc.)
             updateUserProfile(data.user);
           }
         } catch {
-          // Network error — keep the session, try again later
+          // Network error — keep session
         }
       }
       setAuthChecked(true);
@@ -63,7 +58,6 @@ function App() {
     validate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (user && socket) {
@@ -73,17 +67,14 @@ function App() {
 
   useEffect(() => {
     if (!socket || !user) return undefined;
-
     const onAvatarUpdated = ({ uid, avatarConfig }) => {
       if (uid === user.uid) updateUserProfile({ avatarConfig });
     };
     const onStatusUpdated = ({ uid, statusMessage }) => {
       if (uid === user.uid) updateUserProfile({ statusMessage });
     };
-
     socket.on(SOCKET_EVENTS.PROFILE_AVATAR_UPDATED, onAvatarUpdated);
     socket.on(SOCKET_EVENTS.PROFILE_STATUS_UPDATED, onStatusUpdated);
-
     return () => {
       socket.off(SOCKET_EVENTS.PROFILE_AVATAR_UPDATED, onAvatarUpdated);
       socket.off(SOCKET_EVENTS.PROFILE_STATUS_UPDATED, onStatusUpdated);
@@ -101,10 +92,6 @@ function App() {
   }, [settings.bgMusicEnabled, settings.masterVolume]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
     if (room && token && user && !roomCode) {
@@ -115,46 +102,27 @@ function App() {
 
   const isAuthenticated = token && user;
 
-  // Don't render anything until we've verified the stored token
+  // Loading spinner while token is being validated
   if (!authChecked) {
     return (
       <div style={{
         minHeight: '100vh', width: '100%', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg)'
+        alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16,
+        background: 'linear-gradient(160deg, #1A120B 0%, #0D0805 55%, #1A120B 100%)',
       }}>
-        <div style={{
-          fontSize: 52, animation: 'spin 1s linear infinite'
-        }}>🎲</div>
+        <div style={{ fontSize: 52, animation: 'spin 1s linear infinite' }}>🎲</div>
+        <p style={{ fontFamily: "'Cinzel', serif", color: '#FFD700', letterSpacing: 4, fontSize: 12, margin: 0 }}>
+          LOADING
+        </p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
+    <div style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
       <ToastContainer />
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => useGameStore.getState().closeSettings()} />
-      <ThemeSelector />
-
-      {isAuthenticated && !roomCode ? (
-        <div style={{ position: 'fixed', top: 12, right: 12, display: 'flex', gap: 8, zIndex: 100 }}>
-          <button
-            onClick={() => useGameStore.getState().toggleTheme()}
-            style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-out)', color: 'var(--text)', transition: 'transform 0.15s' }}
-            aria-label="Theme"
-          >
-            <Palette size={20} />
-          </button>
-          <button
-            onClick={() => useGameStore.getState().toggleSettings()}
-            style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-out)', color: 'var(--text)', transition: 'transform 0.15s' }}
-            aria-label="Settings"
-          >
-            <Settings size={20} />
-          </button>
-        </div>
-      ) : null}
 
       {!isAuthenticated ? (
         <AuthPage />

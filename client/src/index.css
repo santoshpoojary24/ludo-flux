@@ -7,142 +7,48 @@
    LUDO FLUX — Global Design Tokens & Theme System
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Theme 1: Clay (default) ─────────────────────────────────────────────── */
-:root,
-[data-theme="clay"] {
-  --bg: #FAF7F2;
-  --surface: #EDE8E1;
-  --surface2: #E2DDD6;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --border: rgba(255, 255, 255, 0.8);
-  --shadow-out: 6px 12px 28px rgba(0, 0, 0, 0.18), inset 2px 2px 6px rgba(255, 255, 255, 0.75);
-  --shadow-in: inset 4px 4px 10px rgba(0, 0, 0, 0.14), inset -3px -3px 8px rgba(255, 255, 255, 0.7);
-  --radius: 20px;
-  --radius-pill: 9999px;
-  --token-red: #f87171;
-  --token-green: #4ade80;
-  --token-yellow: #facc15;
-  --token-blue: #3b82f6;
-  --accent: #3b82f6;
-  --board-bg: #EDE8E1;
-  --safe-fill: rgba(59, 130, 246, 0.12);
-  --font: 'Inter', system-ui, sans-serif;
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   LUDO FLUX — Premium Jewel Theme (single global theme)
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Theme 2: Neon Night ─────────────────────────────────────────────────── */
-[data-theme="neon"] {
-  --bg: #0D0D1A;
-  --surface: #131326;
-  --surface2: #1a1a35;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --border: rgba(100, 200, 255, 0.15);
-  --shadow-out: 0 0 20px rgba(0, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.7);
-  --shadow-in: inset 0 0 12px rgba(0, 0, 0, 0.6);
-  --radius: 16px;
-  --radius-pill: 9999px;
-  --token-red: #ff4d6d;
-  --token-green: #39ff14;
-  --token-yellow: #ffe600;
-  --token-blue: #00eeff;
-  --accent: #00eeff;
-  --board-bg: #0a0a18;
-  --safe-fill: rgba(0, 238, 255, 0.12);
-  --font: 'Inter', system-ui, sans-serif;
-}
+:root {
+  /* ── Backgrounds ──────────────────────────────── */
+  --bg:        #1A120B;
+  --bg-grad:   linear-gradient(160deg, #1A120B 0%, #0D0805 55%, #1A120B 100%);
+  --surface:   rgba(40, 29, 20, 0.92);
+  --surface2:  rgba(60, 42, 30, 0.88);
 
-/* ── Theme 3: Minimal ────────────────────────────────────────────────────── */
-[data-theme="minimal"] {
-  --bg: #FFFFFF;
-  --surface: #F5F5F5;
-  --surface2: #EBEBEB;
-  --text: #111111;
-  --text-muted: #666666;
-  --border: #D0D0D0;
-  --shadow-out: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-in: inset 0 1px 4px rgba(0, 0, 0, 0.06);
-  --radius: 8px;
-  --radius-pill: 9999px;
-  --token-red: #ef4444;
-  --token-green: #22c55e;
-  --token-yellow: #eab308;
-  --token-blue: #3b82f6;
-  --accent: #3b82f6;
-  --board-bg: #F5F5F5;
-  --safe-fill: #E8F0FF;
-  --font: 'Inter', system-ui, sans-serif;
-}
+  /* ── Text ─────────────────────────────────────── */
+  --text:       #FFF5E1;
+  --text-muted: #A08060;
 
-/* ── Theme 4: Forest ─────────────────────────────────────────────────────── */
-[data-theme="forest"] {
-  --bg: #1B3A2D;
-  --surface: #1E4533;
-  --surface2: #245238;
-  --text: #E8F5E9;
-  --text-muted: #81C784;
-  --border: rgba(129, 199, 132, 0.2);
-  --shadow-out: 0 8px 24px rgba(0, 0, 0, 0.5), inset 1px 1px 4px rgba(255, 255, 255, 0.06);
-  --shadow-in: inset 3px 3px 8px rgba(0, 0, 0, 0.4);
-  --radius: 18px;
-  --radius-pill: 9999px;
-  --token-red: #E07B54;
-  /* clay-red */
-  --token-green: #6DBF67;
-  /* leaf-green */
-  --token-yellow: #D4A843;
-  /* warm amber */
-  --token-blue: #5B9BD5;
-  /* sky-blue */
-  --accent: #6DBF67;
-  --board-bg: #16301E;
-  --safe-fill: rgba(109, 191, 103, 0.2);
-  --font: 'Inter', system-ui, sans-serif;
-}
+  /* ── Borders & Shadows ────────────────────────── */
+  --border:      rgba(255, 215, 0, 0.22);
+  --shadow-out:  0 12px 36px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,215,0,0.1), inset 0 1px 4px rgba(255,215,0,0.08);
+  --shadow-in:   inset 0 4px 14px rgba(0,0,0,0.85);
 
-/* ── Theme 5: Retro Arcade ───────────────────────────────────────────────── */
-[data-theme="retro"] {
-  --bg: #1A0033;
-  --surface: #220044;
-  --surface2: #2A005A;
-  --text: #FFFF00;
-  --text-muted: #FF88FF;
-  --border: #FF00FF;
-  --shadow-out: 4px 4px 0 #FF00FF, 8px 8px 0 rgba(255, 0, 255, 0.3);
-  --shadow-in: inset 2px 2px 0 rgba(255, 0, 255, 0.4);
-  --radius: 4px;
-  --radius-pill: 4px;
-  --token-red: #FF2222;
-  --token-green: #22FF22;
-  --token-yellow: #FFFF00;
-  --token-blue: #2222FF;
-  --accent: #FF00FF;
-  --board-bg: #110022;
-  --safe-fill: rgba(255, 255, 0, 0.1);
-  --font: 'Courier New', monospace;
-}
-
-/* ── Theme 6: Premium Jewel ───────────────────────────────────────────────── */
-[data-theme="premium"] {
-  --bg: #1A120B;
-  --surface: #281D14;
-  --surface2: #3C2A1E;
-  --text: #FFF5E1;
-  --text-muted: #D2B48C;
-  --border: rgba(255, 215, 0, 0.3);
-  --shadow-out: 0 10px 30px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255, 215, 0, 0.1);
-  --shadow-in: inset 0 4px 12px rgba(0,0,0,0.9);
-  --radius: 12px;
+  /* ── Shape ────────────────────────────────────── */
+  --radius:      16px;
   --radius-pill: 9999px;
-  --token-red: #9B111E;
-  --token-green: #046307;
-  --token-yellow: #B8860B;
-  --token-blue: #0F52BA;
+
+  /* ── Player token jewel colours ───────────────── */
+  --token-red:    hsl(348, 80%, 42%);
+  --token-green:  hsl(152, 70%, 28%);
+  --token-yellow: hsl(40,  85%, 44%);
+  --token-blue:   hsl(220, 85%, 38%);
+
+  /* ── Accent (gold) ────────────────────────────── */
   --accent: #FFD700;
-  --board-bg: #1F1610;
-  --safe-fill: rgba(255, 215, 0, 0.1);
-  --font: 'Quicksand', sans-serif;
+
+  /* ── Board ────────────────────────────────────── */
+  --board-bg:   #1F1610;
+  --safe-fill:  rgba(255, 215, 0, 0.1);
+
+  /* ── Typography ───────────────────────────────── */
+  --font:       'Quicksand', sans-serif;
+  --font-title: 'Cinzel', serif;
 }
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BASE STYLES — apply design tokens
@@ -155,15 +61,13 @@
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--bg);
+  background: var(--bg-grad);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
-  transition: background 0.4s, color 0.3s;
   -webkit-tap-highlight-color: transparent;
 }
+
 
 /* ── Utility classes (themed) ─────────────────────────────────────────────── */
 .t-bg {
