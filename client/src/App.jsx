@@ -1,5 +1,6 @@
 // client/src/App.jsx
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import GamePage from './pages/GamePage';
 import AuthPage from './pages/AuthPage';
