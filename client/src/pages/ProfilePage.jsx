@@ -76,7 +76,7 @@ const ProfilePage = () => {
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
-  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
 
   const fetchProfile = async () => {
     if (!targetUid) return;
