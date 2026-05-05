@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Star, Swords, Clock } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 import AvatarSelector from '../components/ui/AvatarSelector';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+// Mini tab button
+const Tab = ({ active, onClick, icon, label }) => (
+  <button onClick={onClick} style={{
+    flex: 1, padding: '10px 4px', border: 'none', borderRadius: 12, cursor: 'pointer',
+    fontFamily: "'Quicksand', sans-serif", fontWeight: 800, fontSize: 12,
+    background: active ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'transparent',
+    color: active ? '#1A120B' : '#A08060', transition: 'all 0.2s',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+  }}>
+    {icon}{label}
+  </button>
+);
 
 const RANK_TIERS = [
   { name: 'Bronze',   min: 0,    color: '#CD7F32', icon: '🥉' },
@@ -46,9 +59,12 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('stats');
   const [editingStatus, setEditingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState('');
+  const [statusError, setStatusError] = useState('');
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
@@ -59,14 +75,16 @@ const ProfilePage = () => {
     setLoading(true);
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const [profileRes, statsRes, matchesRes] = await Promise.all([
+      const [profileRes, statsRes, matchesRes, badgesRes] = await Promise.all([
         fetch(`${API_URL}/api/profile/${targetUid}/summary`, { headers }),
         fetch(`${API_URL}/api/profile/${targetUid}/stats`, { headers }),
-        fetch(`${API_URL}/api/profile/${targetUid}/matches?limit=10`, { headers })
+        fetch(`${API_URL}/api/profile/${targetUid}/matches?limit=10`, { headers }),
+        fetch(`${API_URL}/api/profile/${targetUid}/achievements`, { headers }),
       ]);
       if (profileRes.ok) setProfile(await profileRes.json());
       if (statsRes.ok) setStats(await statsRes.json());
       if (matchesRes.ok) setMatches((await matchesRes.json()).items || []);
+      if (badgesRes.ok) { const bd = await badgesRes.json(); setBadges(bd.items || []); }
     } catch {
       addToast?.('Failed to load profile', 'error');
     } finally {
@@ -77,38 +95,44 @@ const ProfilePage = () => {
   useEffect(() => { fetchProfile(); }, [targetUid, token]);
 
   const updateStatus = async () => {
+    setStatusError('');
     try {
       const res = await fetch(`${API_URL}/api/profile/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ statusMessage: newStatus })
       });
+      const data = await res.json();
       if (res.ok) {
-        setProfile(p => ({ ...p, statusMessage: newStatus }));
-        updateUserProfile({ statusMessage: newStatus });
-        addToast('Status updated!', 'success');
+        setProfile(p => ({ ...p, statusMessage: data.statusMessage ?? newStatus }));
+        updateUserProfile({ statusMessage: data.statusMessage ?? newStatus });
+        addToast('Bio updated! ✓', 'success');
         setEditingStatus(false);
+      } else {
+        setStatusError(data.error || 'Update failed');
       }
-    } catch { addToast('Update failed', 'error'); }
+    } catch { setStatusError('Network error'); }
   };
 
   const updateUsername = async () => {
+    setUsernameError('');
     if (!/^[A-Za-z0-9_]{3,20}$/.test(newUsername)) {
-      setUsernameError('3-20 letters, numbers, underscores only'); return;
+      setUsernameError('3–20 letters, numbers or underscores only'); return;
     }
     try {
+      // The correct endpoint is PATCH /api/auth/username
       const res = await fetch(`${API_URL}/api/auth/username`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ username: newUsername })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) { setUsernameError(data.error || 'Failed to change username'); return; }
       updateUserProfile({ username: newUsername });
-      addToast('Username changed! -200 coins', 'success');
+      addToast('Username changed! -200 coins ✓', 'success');
       setEditingUsername(false);
       fetchProfile();
-    } catch (err) { addToast(err.message, 'error'); }
+    } catch { setUsernameError('Network error — try again'); }
   };
 
   /* ── Loading ──────────────────────────────────────────────────── */
@@ -160,7 +184,7 @@ const ProfilePage = () => {
           <ArrowLeft size={20} />
         </motion.button>
 
-        {/* Rank badge top-right */}
+        {/* Rank badge top-right — no settings button */}
         <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: `1px solid ${rank.color}44`, borderRadius: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 18 }}>{rank.icon}</span>
           <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 12, color: rank.color, letterSpacing: 1 }}>{rank.name}</span>
@@ -251,15 +275,20 @@ const ProfilePage = () => {
               )}
             </div>
             {editingStatus ? (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input type="text" maxLength={60} value={newStatus} onChange={e => setNewStatus(e.target.value)} autoFocus
-                  style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: '1px solid rgba(255,215,0,0.3)', background: 'rgba(255,255,255,0.04)', color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif", fontSize: 13, outline: 'none' }}
-                />
-                <motion.button whileTap={{ scale: 0.9 }} onClick={updateStatus} style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(15,110,55,0.5)', border: '1px solid rgba(74,222,128,0.3)', cursor: 'pointer', color: '#4ade80', display: 'flex' }}><Save size={15} /></motion.button>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setEditingStatus(false)} style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(180,30,60,0.3)', border: '1px solid rgba(248,113,113,0.3)', cursor: 'pointer', color: '#f87171', display: 'flex' }}><X size={15} /></motion.button>
+              <div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <input type="text" maxLength={60} value={newStatus}
+                    onChange={e => { setNewStatus(e.target.value); setStatusError(''); }} autoFocus
+                    placeholder="Write your bio (max 60 chars)…"
+                    style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: `1px solid ${statusError ? 'rgba(248,113,113,0.6)' : 'rgba(255,215,0,0.3)'}`, background: 'rgba(255,255,255,0.04)', color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif", fontSize: 13, outline: 'none' }}
+                  />
+                  <motion.button whileTap={{ scale: 0.9 }} onClick={updateStatus} style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(15,110,55,0.5)', border: '1px solid rgba(74,222,128,0.3)', cursor: 'pointer', color: '#4ade80', display: 'flex' }}><Save size={15} /></motion.button>
+                  <motion.button whileTap={{ scale: 0.9 }} onClick={() => { setEditingStatus(false); setStatusError(''); }} style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(180,30,60,0.3)', border: '1px solid rgba(248,113,113,0.3)', cursor: 'pointer', color: '#f87171', display: 'flex' }}><X size={15} /></motion.button>
+                </div>
+                {statusError && <p style={{ margin: 0, color: '#f87171', fontSize: 11, fontFamily: "'Quicksand', sans-serif" }}>{statusError}</p>}
               </div>
             ) : (
-              <p style={{ margin: 0, color: '#D2B48C', fontStyle: 'italic', fontSize: 13, fontFamily: "'Quicksand', sans-serif" }}>"{profile.statusMessage || 'No status set'}"</p>
+              <p style={{ margin: 0, color: '#D2B48C', fontStyle: 'italic', fontSize: 13, fontFamily: "'Quicksand', sans-serif" }}>"{profile.statusMessage || 'Tap ✏️ to set your bio'}"</p>
             )}
           </div>
 
@@ -271,48 +300,91 @@ const ProfilePage = () => {
           </div>
         </motion.div>
 
-        {/* ── Recent Matches ────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.45 }}
-          style={{ marginTop: 20 }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Swords size={16} color="#FFD700" />
-            <h2 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, color: '#FFD700', letterSpacing: 2 }}>RECENT BATTLES</h2>
+        {/* ── Tabbed section ───────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} style={{ marginTop: 20 }}>
+          {/* Tab bar */}
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: 4, gap: 4, border: '1px solid rgba(255,215,0,0.12)', marginBottom: 16 }}>
+            <Tab active={activeTab==='stats'}    onClick={()=>setActiveTab('stats')}    icon={<BarChart2 size={12}/>} label="Stats"   />
+            <Tab active={activeTab==='battles'}  onClick={()=>setActiveTab('battles')}  icon={<Swords size={12}/>}    label="Battles" />
+            <Tab active={activeTab==='badges'}   onClick={()=>setActiveTab('badges')}   icon={<Award size={12}/>}     label="Badges"  />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {matches.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px 0', color: '#5a4030', fontFamily: "'Quicksand', sans-serif", fontStyle: 'italic' }}>No matches yet — jump into the arena!</div>
-            ) : matches.slice(0, 6).map((match, i) => (
-              <motion.div
-                key={match.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.35 + i * 0.06, duration: 0.35 }}
-                style={{ background: 'rgba(40,29,20,0.85)', backdropFilter: 'blur(12px)', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: `1px solid ${match.result === 'win' ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.12)'}`, boxShadow: match.result === 'win' ? '0 0 12px rgba(74,222,128,0.08)' : 'none' }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <span style={{ fontFamily: "'Quicksand', sans-serif", fontWeight: 700, color: '#D2B48C', fontSize: 13 }}>{match.gameMode || 'Classic'}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#5a4030', fontFamily: "'Quicksand', sans-serif" }}>
-                    <Clock size={10} /> {new Date(match.playedAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {match.eloDelta !== undefined && match.eloDelta !== 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 700, color: match.eloDelta > 0 ? '#4ade80' : '#f87171', fontFamily: "'Quicksand', sans-serif" }}>
-                      {match.eloDelta > 0 ? '+' : ''}{match.eloDelta}
-                    </span>
-                  )}
-                  <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 900, fontSize: 12, color: match.result === 'win' ? '#4ade80' : '#f87171', background: match.result === 'win' ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)', padding: '4px 10px', borderRadius: 8, letterSpacing: 1 }}>
-                    {match.result?.toUpperCase()}
-                  </span>
+          <AnimatePresence mode="wait">
+            {activeTab === 'stats' && (
+              <motion.div key="stats" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.2}}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[
+                    { label:'Total Play Time', value: stats?.totalPlayTimeFormatted || '0m', color:'#a78bfa' },
+                    { label:'Avg Game Length', value: stats?.avgGameDurationFormatted || '—', color:'#60a5fa' },
+                    { label:'Tokens Home',     value: stats?.totalTokensHome ?? 0,          color:'#4ade80' },
+                    { label:'Times Captured',  value: stats?.totalTimesCaptured ?? 0,       color:'#f87171' },
+                    { label:'Captures Made',   value: stats?.totalCapturesMade ?? 0,        color:'#FFD700' },
+                    { label:'Sixes Rolled',    value: stats?.totalSixes ?? 0,               color:'#fb923c' },
+                  ].map(s => (
+                    <div key={s.label} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,215,0,0.1)', borderRadius:14, padding:'14px 12px' }}>
+                      <div style={{ fontFamily:"'Cinzel',serif", fontWeight:900, fontSize:20, color:s.color }}>{s.value}</div>
+                      <div style={{ fontSize:9, fontWeight:700, letterSpacing:1.5, color:'#A08060', marginTop:4, textTransform:'uppercase', fontFamily:"'Quicksand',sans-serif" }}>{s.label}</div>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
-            ))}
-          </div>
+            )}
+
+            {activeTab === 'battles' && (
+              <motion.div key="battles" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.2}}>
+                {matches.length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'32px 0', color:'#5a4030', fontFamily:"'Quicksand',sans-serif", fontStyle:'italic' }}>No battles yet — jump into the arena!</div>
+                ) : matches.slice(0,8).map((match, i) => (
+                  <motion.div key={match.id} initial={{opacity:0,x:-12}} animate={{opacity:1,x:0}} transition={{delay:i*0.05}}
+                    style={{ background:'rgba(40,29,20,0.85)', borderRadius:14, padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8, border:`1px solid ${match.result==='win'?'rgba(74,222,128,0.2)':'rgba(248,113,113,0.1)'}` }}
+                  >
+                    <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+                      <span style={{ fontFamily:"'Quicksand',sans-serif", fontWeight:700, color:'#D2B48C', fontSize:13 }}>{match.gameMode || 'Classic'}</span>
+                      <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:10, color:'#5a4030', fontFamily:"'Quicksand',sans-serif" }}>
+                        <Clock size={10}/> {new Date(match.playedAt).toLocaleDateString()}
+                        {match.summary && <span style={{marginLeft:6}}>· {match.summary}</span>}
+                      </span>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      {match.eloDelta != null && match.eloDelta !== 0 && (
+                        <span style={{ fontSize:11, fontWeight:700, color:match.eloDelta>0?'#4ade80':'#f87171', fontFamily:"'Quicksand',sans-serif" }}>
+                          {match.eloDelta>0?'+':''}{match.eloDelta}
+                        </span>
+                      )}
+                      <span style={{ fontFamily:"'Cinzel',serif", fontWeight:900, fontSize:11, color:match.result==='win'?'#4ade80':'#f87171', background:match.result==='win'?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)', padding:'4px 10px', borderRadius:8, letterSpacing:1 }}>
+                        {match.result?.toUpperCase()}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+
+            {activeTab === 'badges' && (
+              <motion.div key="badges" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.2}}>
+                {badges.length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'32px 0', color:'#5a4030', fontFamily:"'Quicksand',sans-serif", fontStyle:'italic' }}>Play matches to earn badges!</div>
+                ) : (
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+                    {badges.map((b, i) => (
+                      <motion.div key={b.badgeKey} initial={{opacity:0,scale:0.8}} animate={{opacity:1,scale:1}} transition={{delay:i*0.04}}
+                        title={b.description}
+                        style={{ background: b.earnedAt ? 'rgba(255,215,0,0.06)' : 'rgba(255,255,255,0.02)', border:`1px solid ${b.earnedAt?'rgba(255,215,0,0.25)':'rgba(255,255,255,0.06)'}`, borderRadius:14, padding:'14px 8px', textAlign:'center', opacity: b.earnedAt ? 1 : 0.4 }}
+                      >
+                        <div style={{ fontSize:28, marginBottom:6, filter: b.earnedAt ? 'none' : 'grayscale(1)' }}>{b.icon || '🏅'}</div>
+                        <div style={{ fontSize:9, fontWeight:700, color: b.earnedAt ? '#FFD700' : '#5a4030', fontFamily:"'Quicksand',sans-serif", letterSpacing:0.5, lineHeight:1.3 }}>{b.name}</div>
+                        {!b.earnedAt && b.target > 0 && (
+                          <div style={{ marginTop:6, height:3, background:'rgba(255,255,255,0.06)', borderRadius:999, overflow:'hidden' }}>
+                            <div style={{ height:'100%', width:`${Math.min(100,(b.progress/b.target)*100)}%`, background:'rgba(255,215,0,0.4)', borderRadius:999 }} />
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 
@@ -327,8 +399,9 @@ const ProfilePage = () => {
             >
               <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: 18, fontWeight: 700, color: '#FFD700', margin: '0 0 6px' }}>Change Username</h3>
               <p style={{ color: '#A08060', fontSize: 12, fontFamily: "'Quicksand', sans-serif", marginBottom: 16 }}>Cost: 200 coins · 3–20 chars, no spaces</p>
-              <input type="text" value={newUsername} onChange={e => { setNewUsername(e.target.value); setUsernameError(''); }}
-                style={{ width: '100%', padding: '13px 16px', borderRadius: 12, border: '1px solid rgba(255,215,0,0.25)', background: 'rgba(255,255,255,0.04)', color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+              <input type="text" value={newUsername}
+                onChange={e => { setNewUsername(e.target.value); setUsernameError(''); }}
+                style={{ width: '100%', padding: '13px 16px', borderRadius: 12, border: `1px solid ${usernameError ? 'rgba(248,113,113,0.6)' : 'rgba(255,215,0,0.25)'}`, background: 'rgba(255,255,255,0.04)', color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
                 placeholder="New username"
               />
               {usernameError && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 10, fontFamily: "'Quicksand', sans-serif" }}>{usernameError}</p>}
@@ -336,7 +409,7 @@ const ProfilePage = () => {
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={updateUsername}
                   style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', fontFamily: "'Cinzel', serif", fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
                 >Save</motion.button>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setEditingUsername(false)}
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => { setEditingUsername(false); setUsernameError(''); }}
                   style={{ flex: 1, padding: '13px', borderRadius: 12, border: '1px solid rgba(255,215,0,0.2)', background: 'transparent', color: '#A08060', fontFamily: "'Quicksand', sans-serif", fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
                 >Cancel</motion.button>
               </div>
@@ -344,6 +417,18 @@ const ProfilePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Avatar Selector ──────────────────────────────────────── */}
+      <AvatarSelector
+        isOpen={showAvatarSelector}
+        onClose={() => setShowAvatarSelector(false)}
+        currentAvatar={profile?.avatarConfig}
+        onAvatarSelected={(config) => { updateUserProfile({ avatarConfig: config }); fetchProfile(); }}
+      />
+    </motion.div>
+  );
+};
+
 
       {/* ── Avatar Selector ──────────────────────────────────────── */}
       <AvatarSelector
