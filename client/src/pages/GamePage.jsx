@@ -11,8 +11,9 @@ import Scoreboard from '../components/ui/Scoreboard';
 import FriendsList from '../components/dashboard/FriendsList';
 import { QRCodeCanvas } from 'qrcode.react';
 import {
-  ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings, Palette
+  ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings
 } from 'lucide-react';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -29,8 +30,8 @@ const GamePage = () => {
     addToast,
     settings,
     toggleSettings,
-    toggleTheme
   } = useGameStore();
+
 
   const { socket } = useSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -260,6 +261,50 @@ const GamePage = () => {
     && !gameState?.winner
     && gameState?.status === 'playing';
 
+  // ── Auto-skip: no valid moves → skip turn after 800ms ───────────
+  const movableTokens = React.useMemo(() => {
+    if (!diceValue || !isMyTurn || !myColor || !gameState?.tokens) return [];
+    return (gameState.tokens[myColor] || []).reduce((acc, pos, idx) => {
+      // A token is movable if it's not already home (pos === -2) — simplified check
+      // The full logic lives on server; we only need to know if ANY move is possible
+      if (pos !== -2) acc.push(idx);
+      return acc;
+    }, []);
+  }, [diceValue, isMyTurn, myColor, gameState?.tokens]);
+
+  const autoSkipRef = React.useRef(null);
+  useEffect(() => {
+    if (clearAutoSkip) clearAutoSkip();
+    if (isMyTurn && diceValue !== null && movableTokens.length === 0 && !gameState?.winner) {
+      autoSkipRef.current = setTimeout(() => {
+        addToast('No moves! Skipping…', 'info');
+        // Server will auto-advance turn after roll with no moves
+        // but we also emit to force skip if server hasn't
+        socket?.emit(SOCKET_EVENTS.GAME_MOVE_TOKEN, {
+          roomCode: roomCodeRef.current, color: myColor, tokenIndex: -1, uid: user?.uid
+        });
+      }, 800);
+    }
+    if (isMyTurn && diceValue !== null && movableTokens.length === 1) {
+      autoSkipRef.current = setTimeout(() => {
+        handleMoveToken(myColor, movableTokens[0]);
+      }, 350);
+    }
+    return () => { if (autoSkipRef.current) clearTimeout(autoSkipRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diceValue, isMyTurn, movableTokens.length]);
+
+  const clearAutoSkip = () => {
+    if (autoSkipRef.current) clearTimeout(autoSkipRef.current);
+  };
+
+  // player accent colour for dice flash
+  const myTokenColor = myColor === 'red' ? '#C0392B'
+    : myColor === 'green' ? '#1A7A4A'
+    : myColor === 'yellow' ? '#B8860B'
+    : myColor === 'blue' ? '#1A4A8A' : '#FFD700';
+
+
   // Loading screen
   if (!gameState) {
     return (
@@ -331,10 +376,8 @@ const GamePage = () => {
           <button onClick={toggleSettings} style={styles.iconBtn} title="Settings">
             <Settings size={18} />
           </button>
-          <button onClick={toggleTheme} style={styles.iconBtn} title="Toggle Theme">
-            <Palette size={18} />
-          </button>
         </div>
+
 
         <div style={styles.roomInfo}>
           <span style={styles.roomLabel}>ROOM</span>
@@ -568,7 +611,9 @@ const GamePage = () => {
                   isRolling={isRollingAnim}
                   canRoll={canRoll}
                   onRoll={handleRollDice}
+                  playerColor={myTokenColor}
                 />
+
               </motion.div>
             )}
           </AnimatePresence>

@@ -37,11 +37,12 @@ const SAFE_COLOR = { 0:'red',8:'red', 13:'green',21:'green', 26:'yellow',34:'yel
 
 /* ─── Jewel-tone quadrant colours ────────────────────────────────────────────── */
 const QUAD_COLORS = {
-  red:    { bg: 'hsl(348,72%,34%)', light: 'hsl(348,65%,52%)', glow: 'rgba(160,20,45,0.55)' },
-  green:  { bg: 'hsl(152,65%,22%)', light: 'hsl(152,60%,38%)', glow: 'rgba(15,110,55,0.55)' },
-  yellow: { bg: 'hsl(40,80%,32%)',  light: 'hsl(42,85%,50%)',  glow: 'rgba(180,130,10,0.55)' },
-  blue:   { bg: 'hsl(220,80%,26%)', light: 'hsl(220,75%,44%)', glow: 'rgba(15,50,160,0.55)' },
+  red:    { bg: '#7B0A0A', light: '#C0392B', glow: 'rgba(192,57,43,0.6)' },
+  green:  { bg: '#0A3D1A', light: '#1A7A4A', glow: 'rgba(26,122,74,0.6)' },
+  yellow: { bg: '#5A3E00', light: '#B8860B', glow: 'rgba(184,134,11,0.6)' },
+  blue:   { bg: '#0A1F5A', light: '#1A4A8A', glow: 'rgba(26,74,138,0.6)' },
 };
+
 
 const getCoord = (color, pos) => {
   if (pos < 0) return null;
@@ -352,34 +353,32 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         return (
           <div
             key={`cell-${idx}`}
-            /* Safe zones get the CSS pulse class from index.css */
-            className={isSafe ? 'safe-zone-pulse' : ''}
+            className={isSafe ? 'safe-cell-glow' : ''}
             style={{
               position: 'absolute',
               left: `${coord.c * CELL}%`, top: `${coord.r * CELL}%`,
               width: `${CELL}%`, height: `${CELL}%`,
-              /* Warm ivory/cream for normal cells; tinted for safe zones */
               background: isSafe
-                ? `var(--token-${sc})22`
-                : 'linear-gradient(145deg, #FFF8F0, #EDE0D0)',
-              border: `1px solid ${isSafe ? `var(--token-${sc})88` : 'rgba(160,120,80,0.3)'}`,
-              boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.7), inset -1px -1px 2px rgba(0,0,0,0.08)',
+                ? `var(--token-${sc})28`
+                : 'linear-gradient(145deg, #FFF8EE, #EDD8B8)',
+              border: `1px solid ${isSafe ? '#D4AF37' : 'rgba(212,175,55,0.25)'}`,
+              boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.55), inset -1px -1px 2px rgba(0,0,0,0.12)',
               boxSizing: 'border-box',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 3,
             }}
           >
-            {/* Safe zone star icon */}
             {isSafe && (
               <div style={{
                 width: '54%', height: '54%',
                 background: `var(--token-${sc})`,
                 clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)',
-                opacity: 0.75,
-                filter: `drop-shadow(0 0 3px var(--token-${sc}))`,
+                opacity: 0.8,
+                filter: `drop-shadow(0 0 4px var(--token-${sc}))`,
               }} />
             )}
           </div>
+
         );
       })}
 
