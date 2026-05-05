@@ -4,265 +4,214 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Lock } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
-/* ─── Dice skin definitions ─────────────────────────────────────── */
-const DICE_SKINS = [
-  { id: 'classic',  name: 'Classic',    icon: '🎲', desc: 'Ivory white, charcoal pips', unlocked: true,  preview: 'linear-gradient(145deg,#FFFFF8,#EDE8D8)' },
-  { id: 'obsidian', name: 'Obsidian',   icon: '🖤', desc: 'Glossy jet-black cube',       unlocked: true,  preview: 'linear-gradient(145deg,#2d2d2d,#111)' },
-  { id: 'ruby',     name: 'Ruby',       icon: '💎', desc: 'Deep crimson gem dice',       unlocked: false, preview: 'linear-gradient(145deg,#c0392b,#7b0a0a)' },
-  { id: 'sapphire', name: 'Sapphire',   icon: '🔷', desc: 'Royal blue crystal',          unlocked: false, preview: 'linear-gradient(145deg,#1a4a8a,#0a1f5a)' },
-  { id: 'emerald',  name: 'Emerald',    icon: '💚', desc: 'Verdant forest green',        unlocked: false, preview: 'linear-gradient(145deg,#1a7a4a,#0a3d1a)' },
-  { id: 'gold',     name: 'Gold Crown', icon: '👑', desc: 'Solid 24K gold finish',       unlocked: false, preview: 'linear-gradient(145deg,#FFD700,#B8860B)' },
-];
+/* ─── Dice skins ─────────────────────────────────────────────────── */
+export const DICE_SKINS = {
+  classic:  { name: 'Classic',    icon: '🎲', desc: 'Ivory white, charcoal pips', unlocked: true,  pipColor: 'rgba(30,20,10,0.85)', faceGrad: 'linear-gradient(145deg,#FFFFF8,#EDE8D8)', borderColor: 'rgba(0,0,0,0.12)' },
+  obsidian: { name: 'Obsidian',   icon: '🖤', desc: 'Glossy jet-black cube',       unlocked: true,  pipColor: 'rgba(220,220,220,0.9)', faceGrad: 'linear-gradient(145deg,#2d2d2d,#111)',   borderColor: 'rgba(255,255,255,0.08)' },
+  ruby:     { name: 'Ruby',       icon: '💎', desc: 'Deep crimson gem dice',       unlocked: false, pipColor: '#ffe0e0',               faceGrad: 'linear-gradient(145deg,#c0392b,#7b0a0a)', borderColor: 'rgba(255,100,100,0.3)' },
+  sapphire: { name: 'Sapphire',   icon: '🔷', desc: 'Royal blue crystal',          unlocked: false, pipColor: '#cce0ff',               faceGrad: 'linear-gradient(145deg,#1a4a8a,#0a1f5a)', borderColor: 'rgba(100,160,255,0.3)' },
+  emerald:  { name: 'Emerald',    icon: '💚', desc: 'Verdant forest green',        unlocked: false, pipColor: '#d0ffe0',               faceGrad: 'linear-gradient(145deg,#1a7a4a,#0a3d1a)', borderColor: 'rgba(80,200,120,0.3)' },
+  gold:     { name: 'Gold Crown', icon: '👑', desc: 'Solid 24K gold finish',       unlocked: false, pipColor: '#5c3200',               faceGrad: 'linear-gradient(145deg,#FFD700,#B8860B)', borderColor: 'rgba(255,215,0,0.5)' },
+};
 
-/* ─── Board skin definitions ─────────────────────────────────────── */
-const BOARD_SKINS = [
-  { id: 'walnut',    name: 'Dark Walnut',    icon: '🪵', desc: 'Premium walnut wood grain',  unlocked: true,  preview: 'linear-gradient(145deg,#2C1A0E,#1F1208)' },
-  { id: 'marble',   name: 'White Marble',   icon: '🏛️', desc: 'Elegant Italian marble',     unlocked: false, preview: 'linear-gradient(145deg,#f5f5f5,#d4c4b0)' },
-  { id: 'cosmic',   name: 'Cosmic',         icon: '🌌', desc: 'Deep space nebula board',    unlocked: false, preview: 'linear-gradient(145deg,#0f0c29,#302b63)' },
-  { id: 'jade',     name: 'Jade Temple',    icon: '🟩', desc: 'Ancient jade stone finish',  unlocked: false, preview: 'linear-gradient(145deg,#1a6b47,#0d3d28)' },
-  { id: 'neon',     name: 'Neon Grid',      icon: '💡', desc: 'Cyberpunk holographic grid', unlocked: false, preview: 'linear-gradient(145deg,#0d0d0d,#1a1a2e)' },
-  { id: 'parchment',name: 'Ancient Scroll', icon: '📜', desc: 'Worn parchment & ink',       unlocked: false, preview: 'linear-gradient(145deg,#d4a853,#a0722a)' },
-];
+/* ─── Board skins ────────────────────────────────────────────────── */
+export const BOARD_SKINS = {
+  walnut:    { name: 'Dark Walnut',    icon: '🪵', desc: 'Premium walnut wood grain',  unlocked: true,  bg: 'linear-gradient(145deg,#2C1A0E,#1F1208)' },
+  marble:    { name: 'White Marble',   icon: '🏛️', desc: 'Elegant Italian marble',     unlocked: false, bg: 'linear-gradient(145deg,#f0ece4,#d4c4b0)' },
+  cosmic:    { name: 'Cosmic',         icon: '🌌', desc: 'Deep space nebula board',    unlocked: false, bg: 'linear-gradient(145deg,#0f0c29,#302b63)' },
+  jade:      { name: 'Jade Temple',    icon: '🟩', desc: 'Ancient jade stone finish',  unlocked: false, bg: 'linear-gradient(145deg,#1a6b47,#0d3d28)' },
+  neon:      { name: 'Neon Grid',      icon: '💡', desc: 'Cyberpunk holographic grid', unlocked: false, bg: 'linear-gradient(145deg,#0d0d0d,#1a1a2e)' },
+  parchment: { name: 'Ancient Scroll', icon: '📜', desc: 'Worn parchment & ink',       unlocked: false, bg: 'linear-gradient(145deg,#d4a853,#a0722a)' },
+};
 
-/* ─── Token skin definitions ─────────────────────────────────────── */
-const TOKEN_SKINS = [
-  { id: 'jewel',   name: 'Jewel Gems',    icon: '💎', desc: 'Layered gem 3D tokens',       unlocked: true,  colors: ['#C0392B','#1A7A4A','#B8860B','#1A4A8A'] },
-  { id: 'knight',  name: 'Chess Knights', icon: '♟️', desc: 'Carved chess piece tokens',   unlocked: false, colors: ['#8B4513','#D2691E','#A0522D','#6B3A2A'] },
-  { id: 'crystal', name: 'Crystal Orbs',  icon: '🔮', desc: 'Glowing crystal spheres',     unlocked: false, colors: ['#FF6B9D','#A855F7','#3B82F6','#10B981'] },
-  { id: 'fire',    name: 'Flame Tokens',  icon: '🔥', desc: 'Living flame pieces',         unlocked: false, colors: ['#FF4500','#FF8C00','#FFD700','#FF6347'] },
-  { id: 'metal',   name: 'Metal Crowns',  icon: '👑', desc: 'Polished metal crown tokens', unlocked: false, colors: ['#C0C0C0','#FFD700','#CD7F32','#E5E4E2'] },
-  { id: 'emoji',   name: 'Emoji Crew',    icon: '😎', desc: 'Fun emoji face tokens',       unlocked: false, colors: ['#FFD700','#FF6B9D','#3B82F6','#10B981'] },
-];
+/* ─── Token skins ────────────────────────────────────────────────── */
+export const TOKEN_SKINS = {
+  jewel:   { name: 'Jewel Gems',    icon: '💎', desc: 'Layered gem 3D tokens',       unlocked: true,  colors: ['#C0392B','#1A7A4A','#B8860B','#1A4A8A'] },
+  knight:  { name: 'Chess Knights', icon: '♟️', desc: 'Carved chess piece tokens',   unlocked: false, colors: ['#8B4513','#D2691E','#A0522D','#6B3A2A'] },
+  crystal: { name: 'Crystal Orbs',  icon: '🔮', desc: 'Glowing crystal spheres',     unlocked: false, colors: ['#FF6B9D','#A855F7','#3B82F6','#10B981'] },
+  fire:    { name: 'Flame Tokens',  icon: '🔥', desc: 'Living flame pieces',         unlocked: false, colors: ['#FF4500','#FF8C00','#FFD700','#FF6347'] },
+  metal:   { name: 'Metal Crowns',  icon: '👑', desc: 'Polished metal crown tokens', unlocked: false, colors: ['#C0C0C0','#FFD700','#CD7F32','#E5E4E2'] },
+  emoji:   { name: 'Emoji Crew',    icon: '😎', desc: 'Fun emoji face tokens',       unlocked: false, colors: ['#FFD700','#FF6B9D','#3B82F6','#10B981'] },
+};
 
-/* ─── Category tab ───────────────────────────────────────────────── */
 const CATS = [
-  { id: 'dice',   label: 'Dice',   icon: '🎲' },
-  { id: 'board',  label: 'Board',  icon: '🏁' },
-  { id: 'tokens', label: 'Tokens', icon: '♟️' },
+  { id: 'dice',   label: 'Dice',   icon: '🎲', key: 'diceSkin'  },
+  { id: 'board',  label: 'Board',  icon: '🏁', key: 'boardSkin' },
+  { id: 'tokens', label: 'Tokens', icon: '♟️', key: 'tokenSkin' },
 ];
 
-const cardStyle = (selected, unlocked) => ({
-  position: 'relative',
-  borderRadius: 18,
-  border: `2px solid ${selected ? '#FFD700' : unlocked ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.06)'}`,
-  background: selected
-    ? 'rgba(255,215,0,0.08)'
-    : unlocked
-    ? 'rgba(40,29,20,0.85)'
-    : 'rgba(20,14,10,0.85)',
-  cursor: unlocked ? 'pointer' : 'default',
-  overflow: 'hidden',
-  transition: 'border-color 0.2s, transform 0.15s',
-  backdropFilter: 'blur(8px)',
-  boxShadow: selected
-    ? '0 0 0 1px #FFD70055, 0 8px 24px rgba(255,215,0,0.15)'
-    : '0 4px 16px rgba(0,0,0,0.3)',
-  opacity: unlocked ? 1 : 0.65,
-});
+const ALL_SKINS = { dice: DICE_SKINS, board: BOARD_SKINS, tokens: TOKEN_SKINS };
 
+/* ── Previews ─────────────────────────────────────────────────────── */
+const DicePreview = ({ skin }) => (
+  <div style={{
+    width: 60, height: 60, borderRadius: 13, flexShrink: 0,
+    background: skin.faceGrad,
+    border: `1.5px solid ${skin.borderColor}`,
+    boxShadow: 'inset 0 2px 5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.4)',
+    display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
+    gridTemplateRows: 'repeat(3,1fr)', padding: 8, gap: 4,
+  }}>
+    {[0,1,2,3,4,5,6,7,8].map(i => (
+      <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {[0,2,4,6,8].includes(i) && (
+          <div style={{ width: 9, height: 9, borderRadius: '50%', background: skin.pipColor, boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.5)' }} />
+        )}
+      </div>
+    ))}
+  </div>
+);
+
+const BoardPreview = ({ skin }) => (
+  <div style={{
+    width: 60, height: 60, borderRadius: 13, flexShrink: 0,
+    background: skin.bg,
+    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.08), 0 4px 10px rgba(0,0,0,0.4)',
+    display: 'grid', gridTemplateColumns: 'repeat(3,1fr)',
+    gridTemplateRows: 'repeat(3,1fr)', gap: 2, padding: 8,
+  }}>
+    {Array.from({length:9},(_,i) => (
+      <div key={i} style={{ borderRadius: 3, background: [0,2,6,8].includes(i) ? 'rgba(255,255,255,0.14)' : i===4 ? 'rgba(255,215,0,0.35)' : 'rgba(255,255,255,0.04)' }} />
+    ))}
+  </div>
+);
+
+const TokenPreview = ({ skin }) => (
+  <div style={{ width: 60, height: 60, borderRadius: 13, flexShrink: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 4, padding: 8 }}>
+    {skin.colors.slice(0,4).map((c,i) => (
+      <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: `radial-gradient(circle at 35% 35%,${c}ee,${c}66)`, boxShadow: `inset 0 1px 3px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.4)`, border: `1.5px solid ${c}88` }} />
+    ))}
+  </div>
+);
+
+/* ── Main Page ────────────────────────────────────────────────────── */
 const CollectionPage = () => {
   const navigate = useNavigate();
-  const { addToast } = useGameStore();
+  const { cosmetics, setCosmetic, addToast } = useGameStore();
+  const [cat, setCat] = useState('dice');
 
-  const [cat, setCat]             = useState('dice');
-  const [selectedDice, setDice]   = useState('classic');
-  const [selectedBoard, setBoard] = useState('walnut');
-  const [selectedToken, setToken] = useState('jewel');
+  const currentCat  = CATS.find(c => c.id === cat);
+  const skins       = Object.entries(ALL_SKINS[cat]);
+  const selectedId  = cosmetics?.[currentCat.key] || Object.keys(ALL_SKINS[cat])[0];
+  const totalSkins  = skins.length;
+  const unlockedCnt = skins.filter(([,s]) => s.unlocked).length;
 
-  const handleSelect = (id, setter, skins) => {
-    const skin = skins.find(s => s.id === id);
-    if (!skin?.unlocked) {
+  const handleSelect = (id, skin) => {
+    if (!skin.unlocked) {
       addToast('Unlock this skin in the Shop! 🛒', 'info');
       return;
     }
-    setter(id);
-    addToast('Skin equipped! ✓', 'success');
+    setCosmetic(currentCat.key, id);
+    addToast(`${skin.name} equipped! ✓`, 'success');
   };
-
-  const renderDicePreview = (skin) => (
-    <div style={{
-      width: 64, height: 64, borderRadius: 14,
-      background: skin.preview,
-      boxShadow: 'inset 0 2px 6px rgba(255,255,255,0.4), inset 0 -2px 6px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.4)',
-      display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center',
-      padding: 10, gap: 5, flexShrink: 0,
-    }}>
-      {[0,1,2].map(i => (
-        <div key={i} style={{
-          width: 10, height: 10, borderRadius: '50%',
-          background: skin.id === 'obsidian' ? 'rgba(255,255,255,0.7)' : skin.id === 'gold' ? '#5c3200' : 'rgba(30,20,10,0.8)',
-          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)',
-        }} />
-      ))}
-    </div>
-  );
-
-  const renderBoardPreview = (skin) => (
-    <div style={{
-      width: 64, height: 64, borderRadius: 14,
-      background: skin.preview,
-      boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.4)',
-      display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridTemplateRows: 'repeat(3,1fr)',
-      gap: 2, padding: 8, flexShrink: 0,
-    }}>
-      {Array.from({ length: 9 }, (_, i) => (
-        <div key={i} style={{
-          borderRadius: 3,
-          background: [0,2,6,8].includes(i)
-            ? 'rgba(255,255,255,0.12)'
-            : i === 4
-            ? 'rgba(255,215,0,0.3)'
-            : 'rgba(255,255,255,0.05)',
-        }} />
-      ))}
-    </div>
-  );
-
-  const renderTokenPreview = (skin) => (
-    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-      {skin.colors.slice(0, 4).map((c, i) => (
-        <div key={i} style={{
-          width: 14, height: 14, borderRadius: '50%',
-          background: `radial-gradient(circle at 35% 35%, ${c}dd, ${c}66)`,
-          boxShadow: `inset 0 1px 3px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.4)`,
-          border: `1px solid ${c}88`,
-        }} />
-      ))}
-    </div>
-  );
-
-  const skins   = cat === 'dice' ? DICE_SKINS : cat === 'board' ? BOARD_SKINS : TOKEN_SKINS;
-  const current = cat === 'dice' ? selectedDice : cat === 'board' ? selectedBoard : selectedToken;
-  const setter  = cat === 'dice' ? setDice : cat === 'board' ? setBoard : setToken;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.28 }}
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(160deg,#1A120B 0%,#0D0805 55%,#1A120B 100%)',
-        paddingBottom: 40,
-      }}
+      transition={{ duration: 0.25 }}
+      style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#1A120B 0%,#0D0805 55%,#1A120B 100%)', paddingBottom: 40 }}
     >
       {/* ── Header ───────────────────────────────────────────────── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '16px 16px 12px',
+        display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 12px',
         borderBottom: '1px solid rgba(255,215,0,0.12)',
-        background: 'rgba(26,18,11,0.9)',
-        backdropFilter: 'blur(12px)',
+        background: 'rgba(26,18,11,0.95)', backdropFilter: 'blur(12px)',
         position: 'sticky', top: 0, zIndex: 20,
       }}>
-        <motion.button
-          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+        <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
           onClick={() => navigate(-1)}
           style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFD700', flexShrink: 0 }}
         >
           <ArrowLeft size={18} />
         </motion.button>
-
-        <div>
-          <h1 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontWeight: 900, fontSize: 20, color: '#FFD700', letterSpacing: 2 }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ margin: 0, fontFamily: "'Cinzel',serif", fontWeight: 900, fontSize: 20, color: '#FFD700', letterSpacing: 2 }}>
             COLLECTION
           </h1>
-          <p style={{ margin: 0, fontFamily: "'Quicksand', sans-serif", fontSize: 11, color: '#A08060', letterSpacing: 1 }}>
-            Personalise your game
+          <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 11, color: '#A08060', letterSpacing: 1 }}>
+            Personalise your game pieces
           </p>
         </div>
-
-        {/* Unlocked count badge */}
-        <div style={{ marginLeft: 'auto', background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: 99, padding: '4px 12px' }}>
-          <span style={{ fontFamily: "'Quicksand', sans-serif", fontSize: 12, fontWeight: 800, color: '#FFD700' }}>
-            {skins.filter(s => s.unlocked).length}/{skins.length} unlocked
+        <div style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.18)', borderRadius: 99, padding: '4px 12px' }}>
+          <span style={{ fontFamily: "'Quicksand',sans-serif", fontSize: 12, fontWeight: 800, color: '#FFD700' }}>
+            {unlockedCnt}/{totalSkins} unlocked
           </span>
         </div>
       </div>
 
-      {/* ── Category Tabs ─────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, padding: '16px 16px 0', overflowX: 'auto' }}>
+      {/* ── Tabs ─────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 8, padding: '16px 16px 4px', overflowX: 'auto' }}>
         {CATS.map(c => (
-          <motion.button
-            key={c.id}
-            onClick={() => setCat(c.id)}
+          <motion.button key={c.id} onClick={() => setCat(c.id)}
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '10px 20px', borderRadius: 99, border: 'none',
-              background: cat === c.id
-                ? 'linear-gradient(135deg,#B8860B,#FFD700)'
-                : 'rgba(40,29,20,0.8)',
+              background: cat === c.id ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'rgba(40,29,20,0.85)',
               color: cat === c.id ? '#1A120B' : '#A08060',
-              fontFamily: "'Quicksand', sans-serif", fontWeight: 800,
-              fontSize: 13, cursor: 'pointer', flexShrink: 0,
+              fontFamily: "'Quicksand',sans-serif", fontWeight: 800, fontSize: 13,
+              cursor: 'pointer', flexShrink: 0,
               boxShadow: cat === c.id ? '0 4px 16px rgba(255,215,0,0.25)' : 'none',
               transition: 'all 0.2s',
             }}
           >
-            <span style={{ fontSize: 16 }}>{c.icon}</span>
-            {c.label}
+            <span style={{ fontSize: 16 }}>{c.icon}</span> {c.label}
           </motion.button>
         ))}
       </div>
 
-      {/* ── Active Category Description ───────────────────────────── */}
-      <div style={{ padding: '12px 16px 4px' }}>
-        <p style={{ margin: 0, fontFamily: "'Quicksand', sans-serif", fontSize: 12, color: '#6B4C2A', fontWeight: 700 }}>
-          {cat === 'dice' && 'Tap a dice skin to equip it for all your games.'}
-          {cat === 'board' && 'Change your board background and texture.'}
-          {cat === 'tokens' && 'Choose the look of your game pieces.'}
+      {/* ── Currently equipped label ──────────────────────────────── */}
+      <div style={{ padding: '10px 16px 2px' }}>
+        <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 12, color: '#6B4C2A', fontWeight: 700 }}>
+          Equipped: <span style={{ color: '#FFD700' }}>{ALL_SKINS[cat][selectedId]?.name}</span>
+          {' · '}changes apply in your next game
         </p>
       </div>
 
-      {/* ── Skins Grid ────────────────────────────────────────────── */}
+      {/* ── Skin List ─────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={cat}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.22 }}
+        <motion.div key={cat} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
           style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 16px' }}
         >
-          {skins.map((skin, i) => {
-            const selected = current === skin.id;
+          {skins.map(([id, skin], i) => {
+            const selected = selectedId === id;
             return (
-              <motion.div
-                key={skin.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={skin.unlocked ? { scale: 1.02, x: 4 } : {}}
+              <motion.div key={id}
+                initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.045 }}
+                whileHover={skin.unlocked ? { scale: 1.02, x: 3 } : {}}
                 whileTap={skin.unlocked ? { scale: 0.98 } : {}}
-                onClick={() => handleSelect(skin.id, setter, skins)}
-                style={cardStyle(selected, skin.unlocked)}
+                onClick={() => handleSelect(id, skin)}
+                style={{
+                  position: 'relative', borderRadius: 18, overflow: 'hidden',
+                  border: `2px solid ${selected ? '#FFD700' : skin.unlocked ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.05)'}`,
+                  background: selected ? 'rgba(255,215,0,0.07)' : skin.unlocked ? 'rgba(40,29,20,0.88)' : 'rgba(18,12,8,0.88)',
+                  cursor: skin.unlocked ? 'pointer' : 'default',
+                  opacity: skin.unlocked ? 1 : 0.6,
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: selected ? '0 0 0 1px #FFD70044, 0 8px 24px rgba(255,215,0,0.12)' : '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'border-color 0.2s',
+                }}
               >
-                {/* Selected glow bar */}
+                {/* Active left bar */}
                 {selected && (
-                  <div style={{
-                    position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-                    background: 'linear-gradient(180deg,#FFD700,#B8860B)',
-                    borderRadius: '4px 0 0 4px',
-                  }} />
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg,#FFD700,#B8860B)', borderRadius: '4px 0 0 4px' }} />
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px 14px 20px' }}>
-                  {/* Preview */}
-                  {cat === 'dice'   && renderDicePreview(skin)}
-                  {cat === 'board'  && renderBoardPreview(skin)}
-                  {cat === 'tokens' && (
-                    <div style={{ width: 64, height: 64, borderRadius: 14, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {renderTokenPreview(skin)}
-                    </div>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px 14px 18px' }}>
+                  {/* Skin preview */}
+                  {cat === 'dice'   && <DicePreview  skin={skin} />}
+                  {cat === 'board'  && <BoardPreview skin={skin} />}
+                  {cat === 'tokens' && <TokenPreview skin={skin} />}
 
-                  {/* Info */}
+                  {/* Text info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 15 }}>{skin.icon}</span>
-                      <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 14, color: selected ? '#FFD700' : '#FFF5E1' }}>
+                      <span style={{ fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 14, color: selected ? '#FFD700' : '#FFF5E1' }}>
                         {skin.name}
                       </span>
                       {selected && (
@@ -271,7 +220,7 @@ const CollectionPage = () => {
                         </span>
                       )}
                     </div>
-                    <p style={{ margin: 0, fontFamily: "'Quicksand', sans-serif", fontSize: 12, color: '#7A5C40', fontWeight: 600 }}>
+                    <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 12, color: '#7A5C40', fontWeight: 600 }}>
                       {skin.desc}
                     </p>
                   </div>
@@ -283,7 +232,7 @@ const CollectionPage = () => {
                         <Check size={14} color="#1A120B" strokeWidth={3} />
                       </div>
                     ) : !skin.unlocked ? (
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Lock size={13} color="#6B4C2A" />
                       </div>
                     ) : (
@@ -294,14 +243,10 @@ const CollectionPage = () => {
                   </div>
                 </div>
 
-                {/* Locked overlay hint */}
+                {/* Locked hint */}
                 {!skin.unlocked && (
-                  <div style={{
-                    position: 'absolute', inset: 0, borderRadius: 18,
-                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-                    padding: '0 16px', pointerEvents: 'none',
-                  }}>
-                    <span style={{ fontFamily: "'Quicksand', sans-serif", fontSize: 10, color: '#4A3020', fontWeight: 700 }}>
+                  <div style={{ position: 'absolute', bottom: 8, right: 14, pointerEvents: 'none' }}>
+                    <span style={{ fontFamily: "'Quicksand',sans-serif", fontSize: 10, color: '#4A3020', fontWeight: 700 }}>
                       Unlock in Shop →
                     </span>
                   </div>
@@ -313,19 +258,19 @@ const CollectionPage = () => {
       </AnimatePresence>
 
       {/* ── Shop CTA ─────────────────────────────────────────────── */}
-      <div style={{ padding: '8px 16px 16px' }}>
-        <motion.button
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+      <div style={{ padding: '4px 16px 16px' }}>
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
           onClick={() => navigate('/shop')}
           style={{
-            width: '100%', padding: '14px 20px', borderRadius: 16, border: '1px solid rgba(255,215,0,0.3)',
-            background: 'rgba(255,215,0,0.06)', color: '#FFD700',
-            fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 14,
+            width: '100%', padding: '14px 20px', borderRadius: 16,
+            border: '1px solid rgba(255,215,0,0.28)',
+            background: 'rgba(255,215,0,0.05)', color: '#FFD700',
+            fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 13,
             cursor: 'pointer', letterSpacing: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
-          🛒 Unlock More in the Shop
+          🛒 Unlock More Skins in the Shop
         </motion.button>
       </div>
     </motion.div>

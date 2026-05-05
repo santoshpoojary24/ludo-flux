@@ -38,8 +38,16 @@ export const useGameStore = create(
       // Local game (Pass & Play)
       localPlayers: null,
 
+      // Cosmetics — persisted skin selections
+      cosmetics: {
+        diceSkin:  'classic',
+        boardSkin: 'walnut',
+        tokenSkin: 'jewel',
+      },
+
       // Toasts (global notifications)
       toasts: [],
+
 
       // Actions
       setUser: (user, token, sessionId) => {
@@ -97,6 +105,15 @@ export const useGameStore = create(
       toggleSettings: () => set((state) => ({ isSettingsOpen: !state.isSettingsOpen })),
       closeSettings: () => set({ isSettingsOpen: false }),
 
+      // Cosmetics
+      setCosmetic: (category, skinId) => {
+        set((state) => ({
+          cosmetics: { ...state.cosmetics, [category]: skinId }
+        }));
+      },
+
+
+
       // Reset game store (for cleanup / leaving game)
       resetGame: () => {
         set({ roomCode: null, gameState: null, localPlayers: null });
@@ -140,8 +157,10 @@ export const useGameStore = create(
         token: state.token,
         sessionId: state.sessionId,
         settings: state.settings,
-        theme: state.theme
+        theme: state.theme,
+        cosmetics: state.cosmetics,
       })
+
     }
   )
 );

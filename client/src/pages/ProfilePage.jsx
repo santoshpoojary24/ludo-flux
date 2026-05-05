@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit3, Save, X, Trophy, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Layers } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Grid } from 'lucide-react';
+
 import { useGameStore } from '../store/gameStore';
 
 import AvatarSelector from '../components/ui/AvatarSelector';
@@ -204,7 +205,8 @@ const ProfilePage = () => {
                 title="Collection"
                 style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,215,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFD700' }}
               >
-                <Layers size={16} />
+                <Grid size={16} />
+
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}

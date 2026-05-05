@@ -217,24 +217,33 @@ const Dashboard = () => {
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {activeTab === 'home' ? (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 8 }}>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/shop')}
-                style={{ background: 'linear-gradient(135deg, var(--token-blue), #3b82f6)', color: 'white', border: 'none', borderRadius: 24, padding: '16px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: 'var(--shadow-out)' }}
+                style={{ background: 'linear-gradient(135deg, var(--token-blue), #3b82f6)', color: 'white', border: 'none', borderRadius: 24, padding: '16px 8px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', boxShadow: 'var(--shadow-out)', fontSize: 13 }}
               >
-                <ShoppingCart size={24} /> Shop
+                <ShoppingCart size={18} /> Shop
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/rewards')}
-                style={{ background: 'linear-gradient(135deg, var(--token-yellow), #eab308)', color: 'white', border: 'none', borderRadius: 24, padding: '16px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: 'var(--shadow-out)' }}
+                style={{ background: 'linear-gradient(135deg, var(--token-yellow), #eab308)', color: 'white', border: 'none', borderRadius: 24, padding: '16px 8px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', boxShadow: 'var(--shadow-out)', fontSize: 13 }}
               >
-                <Gift size={24} /> Rewards
+                <Gift size={18} /> Rewards
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/collection')}
+                style={{ background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', border: 'none', borderRadius: 24, padding: '16px 8px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', boxShadow: 'var(--shadow-out)', fontSize: 13 }}
+              >
+                🎨 Skins
               </motion.button>
             </div>
+
 
             <h2 style={{ margin: 0, fontSize: 13, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase' }}>
               Game Modes
