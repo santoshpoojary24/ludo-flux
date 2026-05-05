@@ -429,16 +429,4 @@ const ProfilePage = () => {
   );
 };
 
-
-      {/* ── Avatar Selector ──────────────────────────────────────── */}
-      <AvatarSelector
-        isOpen={showAvatarSelector}
-        onClose={() => setShowAvatarSelector(false)}
-        currentAvatar={profile?.avatarConfig}
-        onAvatarSelected={(config) => { updateUserProfile({ avatarConfig: config }); fetchProfile(); }}
-      />
-    </motion.div>
-  );
-};
-
 export default ProfilePage;
