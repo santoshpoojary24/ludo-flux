@@ -1,0 +1,15 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules
+
+# Environment variables (never commit real secrets)
+.env
+
+# SQLite database file (data is on the server, not in git)
+database.sqlite
+*.sqlite
+*.sqlite3

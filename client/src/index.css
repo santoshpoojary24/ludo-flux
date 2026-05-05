@@ -1,0 +1,590 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LUDO FLUX — Global Design Tokens & Theme System
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Theme 1: Clay (default) ─────────────────────────────────────────────── */
+:root,
+[data-theme="clay"] {
+  --bg: #FAF7F2;
+  --surface: #EDE8E1;
+  --surface2: #E2DDD6;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: rgba(255, 255, 255, 0.8);
+  --shadow-out: 6px 12px 28px rgba(0, 0, 0, 0.18), inset 2px 2px 6px rgba(255, 255, 255, 0.75);
+  --shadow-in: inset 4px 4px 10px rgba(0, 0, 0, 0.14), inset -3px -3px 8px rgba(255, 255, 255, 0.7);
+  --radius: 20px;
+  --radius-pill: 9999px;
+  --token-red: #f87171;
+  --token-green: #4ade80;
+  --token-yellow: #facc15;
+  --token-blue: #3b82f6;
+  --accent: #3b82f6;
+  --board-bg: #EDE8E1;
+  --safe-fill: rgba(59, 130, 246, 0.12);
+  --font: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Theme 2: Neon Night ─────────────────────────────────────────────────── */
+[data-theme="neon"] {
+  --bg: #0D0D1A;
+  --surface: #131326;
+  --surface2: #1a1a35;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: rgba(100, 200, 255, 0.15);
+  --shadow-out: 0 0 20px rgba(0, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.7);
+  --shadow-in: inset 0 0 12px rgba(0, 0, 0, 0.6);
+  --radius: 16px;
+  --radius-pill: 9999px;
+  --token-red: #ff4d6d;
+  --token-green: #39ff14;
+  --token-yellow: #ffe600;
+  --token-blue: #00eeff;
+  --accent: #00eeff;
+  --board-bg: #0a0a18;
+  --safe-fill: rgba(0, 238, 255, 0.12);
+  --font: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Theme 3: Minimal ────────────────────────────────────────────────────── */
+[data-theme="minimal"] {
+  --bg: #FFFFFF;
+  --surface: #F5F5F5;
+  --surface2: #EBEBEB;
+  --text: #111111;
+  --text-muted: #666666;
+  --border: #D0D0D0;
+  --shadow-out: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-in: inset 0 1px 4px rgba(0, 0, 0, 0.06);
+  --radius: 8px;
+  --radius-pill: 9999px;
+  --token-red: #ef4444;
+  --token-green: #22c55e;
+  --token-yellow: #eab308;
+  --token-blue: #3b82f6;
+  --accent: #3b82f6;
+  --board-bg: #F5F5F5;
+  --safe-fill: #E8F0FF;
+  --font: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Theme 4: Forest ─────────────────────────────────────────────────────── */
+[data-theme="forest"] {
+  --bg: #1B3A2D;
+  --surface: #1E4533;
+  --surface2: #245238;
+  --text: #E8F5E9;
+  --text-muted: #81C784;
+  --border: rgba(129, 199, 132, 0.2);
+  --shadow-out: 0 8px 24px rgba(0, 0, 0, 0.5), inset 1px 1px 4px rgba(255, 255, 255, 0.06);
+  --shadow-in: inset 3px 3px 8px rgba(0, 0, 0, 0.4);
+  --radius: 18px;
+  --radius-pill: 9999px;
+  --token-red: #E07B54;
+  /* clay-red */
+  --token-green: #6DBF67;
+  /* leaf-green */
+  --token-yellow: #D4A843;
+  /* warm amber */
+  --token-blue: #5B9BD5;
+  /* sky-blue */
+  --accent: #6DBF67;
+  --board-bg: #16301E;
+  --safe-fill: rgba(109, 191, 103, 0.2);
+  --font: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Theme 5: Retro Arcade ───────────────────────────────────────────────── */
+[data-theme="retro"] {
+  --bg: #1A0033;
+  --surface: #220044;
+  --surface2: #2A005A;
+  --text: #FFFF00;
+  --text-muted: #FF88FF;
+  --border: #FF00FF;
+  --shadow-out: 4px 4px 0 #FF00FF, 8px 8px 0 rgba(255, 0, 255, 0.3);
+  --shadow-in: inset 2px 2px 0 rgba(255, 0, 255, 0.4);
+  --radius: 4px;
+  --radius-pill: 4px;
+  --token-red: #FF2222;
+  --token-green: #22FF22;
+  --token-yellow: #FFFF00;
+  --token-blue: #2222FF;
+  --accent: #FF00FF;
+  --board-bg: #110022;
+  --safe-fill: rgba(255, 255, 0, 0.1);
+  --font: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES — apply design tokens
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  transition: background 0.4s, color 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Utility classes (themed) ─────────────────────────────────────────────── */
+.t-bg {
+  background: var(--bg);
+}
+
+.t-surface {
+  background: var(--surface);
+}
+
+.t-surface2 {
+  background: var(--surface2);
+}
+
+.t-text {
+  color: var(--text);
+}
+
+.t-muted {
+  color: var(--text-muted);
+}
+
+.t-shadow {
+  box-shadow: var(--shadow-out);
+}
+
+.t-inset {
+  box-shadow: var(--shadow-in);
+}
+
+.t-radius {
+  border-radius: var(--radius);
+}
+
+.t-pill {
+  border-radius: var(--radius-pill);
+}
+
+.t-accent {
+  color: var(--accent);
+}
+
+.t-border {
+  border: 1px solid var(--border);
+}
+
+.t-font {
+  font-family: var(--font);
+}
+
+/* ── Clay-morphism legacy helpers (still used in board/tokens) ────────────── */
+.clay-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-out);
+  transition: all 0.3s;
+}
+
+.clay-button {
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-out);
+  transition: all 0.15s;
+  font-weight: 700;
+  padding: 10px 24px;
+  color: var(--accent);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.clay-button:active {
+  box-shadow: var(--shadow-in);
+}
+
+/* ── Token colours ────────────────────────────────────────────────────────── */
+.token-red {
+  background: var(--token-red);
+}
+
+.token-green {
+  background: var(--token-green);
+}
+
+.token-yellow {
+  background: var(--token-yellow);
+}
+
+.token-blue {
+  background: var(--token-blue);
+}
+
+/* ── Tailwind backwards-compat (board uses these Tailwind classes) ─────────── */
+.bg-clay-surface {
+  background: var(--surface) !important;
+}
+
+.bg-clay-bg {
+  background: var(--bg) !important;
+}
+
+.bg-clay-red {
+  background: var(--token-red) !important;
+}
+
+.bg-clay-green {
+  background: var(--token-green) !important;
+}
+
+.bg-clay-yellow {
+  background: var(--token-yellow) !important;
+}
+
+.bg-clay-blue {
+  background: var(--token-blue) !important;
+}
+
+.text-clay-blue {
+  color: var(--accent) !important;
+}
+
+.shadow-clay {
+  box-shadow: var(--shadow-out) !important;
+}
+
+.shadow-clay-pressed {
+  box-shadow: var(--shadow-in) !important;
+}
+
+.rounded-clay {
+  border-radius: var(--radius) !important;
+}
+
+.rounded-pill {
+  border-radius: var(--radius-pill) !important;
+}
+
+/* ── Neon theme: glowing tokens ──────────────────────────────────────────── */
+[data-theme="neon"] .token-red {
+  box-shadow: 0 0 14px var(--token-red);
+}
+
+[data-theme="neon"] .token-green {
+  box-shadow: 0 0 14px var(--token-green);
+}
+
+[data-theme="neon"] .token-yellow {
+  box-shadow: 0 0 14px var(--token-yellow);
+}
+
+[data-theme="neon"] .token-blue {
+  box-shadow: 0 0 14px var(--token-blue);
+}
+
+/* ── Retro theme: pixelated board ───────────────────────────────────────── */
+[data-theme="retro"] * {
+  image-rendering: pixelated;
+}
+
+/* ── Neon theme: glow pulse animation ───────────────────────────────────── */
+@keyframes neonPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+[data-theme="neon"] .active-player-ring {
+  animation: neonPulse 1.2s ease-in-out infinite;
+}
+
+/* ── Toast container ─────────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+/* ── Settings / Theme panels ─────────────────────────────────────────────── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile: bottom-sheet ───────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .panel-overlay {
+    align-items: flex-end;
+  }
+
+  .panel-sheet {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* ── Scrollbar hide utility ──────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Token spring movement ───────────────────────────────────────────────── */
+.token-move {
+  transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Shake animation (invalid token click) ───────────────────────────────── */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.shake {
+  animation: shake 0.35s ease-in-out;
+}
+
+/* ── Turn timer pulse ────────────────────────────────────────────────────── */
+@keyframes ringPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+/* ── FAB (mobile) ────────────────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  transition: transform 0.2s;
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
+
+/* ── Active player ring pulse ────────────────────────────────────────────── */
+@keyframes activePulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px currentColor;
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px currentColor, 0 0 16px currentColor;
+  }
+}
+
+.active-player-ring {
+  animation: activePulse 1.2s ease-in-out infinite;
+}
+
+/* ── Minimal theme overrides ─────────────────────────────────────────────── */
+[data-theme="minimal"] .clay-card,
+[data-theme="minimal"] .clay-button {
+  border: 1px solid var(--border);
+}
+
+/* ── tapPulse: used in Dice prompt text ──────────────────────────────────── */
+@keyframes tapPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* ── popIn: used in chat bubbles ─────────────────────────────────────────── */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(8px);
+  }
+
+  80% {
+    transform: scale(1.05) translateY(-2px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── slideUp: general panel entrance ─────────────────────────────────────── */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Board shadow glow on active token ───────────────────────────────────── */
+.token-clickable {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* ── Google Fonts preload ─────────────────────────────────────────────────── */
+
+/* ── Selection color ─────────────────────────────────────────────────────── */
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Input focus ring ────────────────────────────────────────────────────── */
+input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-in), 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ── Smooth scroll ───────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── shadow-clay-sm utility ──────────────────────────────────────────────── */
+.shadow-clay-sm {
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.12), inset 1px 1px 3px rgba(255, 255, 255, 0.6);
+}
+
+/* ── More Tailwind compat ────────────────────────────────────────────────── */
+.text-accent {
+  color: var(--accent) !important;
+}
+
+.text-token-green {
+  color: var(--token-green) !important;
+}
+
+.text-token-red {
+  color: var(--token-red) !important;
+}
+
+.text-token-yellow {
+  color: var(--token-yellow) !important;
+}
+
+.text-token-blue {
+  color: var(--token-blue) !important;
+}
+
+.bg-token-green {
+  background: var(--token-green) !important;
+}
+
+.bg-token-red {
+  background: var(--token-red) !important;
+}
+
+.bg-surface {
+  background: var(--surface) !important;
+}
+
+.bg-surface2 {
+  background: var(--surface2) !important;
+}
+
+.text-text {
+  color: var(--text) !important;
+}
+
+.text-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.shadow-in {
+  box-shadow: var(--shadow-in) !important;
+}
