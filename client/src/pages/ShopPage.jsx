@@ -4,11 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Check, Star, Zap, Package } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
-// ── Existing dice/board/token skins
+// ── Skin data from collection page (for previews)
 import { DICE_SKINS, BOARD_SKINS, TOKEN_SKINS } from './CollectionPage';
 
-// ── New cosmetics data
-import { BANNERS, AVATAR_FRAMES, BACKGROUNDS, RARITY } from '../data/cosmeticsData';
+// ── All store items from central data
+import {
+  BANNERS, AVATAR_FRAMES, BACKGROUNDS,
+  DICE_SKINS_STORE, BOARD_SKINS_STORE, TOKEN_SKINS_STORE,
+  RARITY
+} from '../data/cosmeticsData';
+
+
 
 // ── Animated preview components
 import { AnimatedBanner } from '../components/cosmetics/AnimatedBanners';
@@ -17,30 +23,21 @@ import { BACKGROUND_COMPONENTS } from '../components/cosmetics/AnimatedBackgroun
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-/* ─── Existing skin shop items ──────────────────────────────────── */
+/* ─── Skin shop items – sourced from cosmeticsData.js ───────────── */
 const SKIN_ITEMS = [
-  { id: 'dice_obsidian', cat: 'dice', skinKey: 'obsidian', cosmeticKey: 'diceSkin', price: 0, rarity: 'free', label: 'Obsidian Dice' },
-  { id: 'dice_ruby', cat: 'dice', skinKey: 'ruby', cosmeticKey: 'diceSkin', price: 800, rarity: 'rare', label: 'Ruby Dice' },
-  { id: 'dice_sapphire', cat: 'dice', skinKey: 'sapphire', cosmeticKey: 'diceSkin', price: 800, rarity: 'rare', label: 'Sapphire Dice' },
-  { id: 'dice_emerald', cat: 'dice', skinKey: 'emerald', cosmeticKey: 'diceSkin', price: 1200, rarity: 'epic', label: 'Emerald Dice' },
-  { id: 'dice_gold', cat: 'dice', skinKey: 'gold', cosmeticKey: 'diceSkin', price: 2500, rarity: 'legendary', label: 'Gold Crown Dice' },
-  { id: 'board_marble', cat: 'board', skinKey: 'marble', cosmeticKey: 'boardSkin', price: 600, rarity: 'rare', label: 'White Marble Board' },
-  { id: 'board_cosmic', cat: 'board', skinKey: 'cosmic', cosmeticKey: 'boardSkin', price: 1500, rarity: 'epic', label: 'Cosmic Board' },
-  { id: 'board_jade', cat: 'board', skinKey: 'jade', cosmeticKey: 'boardSkin', price: 1000, rarity: 'rare', label: 'Jade Temple Board' },
-  { id: 'board_neon', cat: 'board', skinKey: 'neon', cosmeticKey: 'boardSkin', price: 2000, rarity: 'epic', label: 'Neon Grid Board' },
-  { id: 'board_parchment', cat: 'board', skinKey: 'parchment', cosmeticKey: 'boardSkin', price: 500, rarity: 'common', label: 'Ancient Scroll Board' },
-  { id: 'token_knight', cat: 'tokens', skinKey: 'knight', cosmeticKey: 'tokenSkin', price: 700, rarity: 'rare', label: 'Chess Knight Tokens' },
-  { id: 'token_crystal', cat: 'tokens', skinKey: 'crystal', cosmeticKey: 'tokenSkin', price: 1800, rarity: 'epic', label: 'Crystal Orb Tokens' },
-  { id: 'token_fire', cat: 'tokens', skinKey: 'fire', cosmeticKey: 'tokenSkin', price: 2200, rarity: 'legendary', label: 'Flame Tokens' },
-  { id: 'token_metal', cat: 'tokens', skinKey: 'metal', cosmeticKey: 'tokenSkin', price: 1000, rarity: 'rare', label: 'Metal Crown Tokens' },
-  { id: 'token_emoji', cat: 'tokens', skinKey: 'emoji', cosmeticKey: 'tokenSkin', price: 400, rarity: 'common', label: 'Emoji Crew Tokens' },
+  ...DICE_SKINS_STORE.map(d => ({ ...d, cat: 'dice',   cosmeticKey: 'diceSkin'  })),
+  ...BOARD_SKINS_STORE.map(b => ({ ...b, cat: 'board',  cosmeticKey: 'boardSkin' })),
+  ...TOKEN_SKINS_STORE.map(t => ({ ...t, cat: 'tokens', cosmeticKey: 'tokenSkin' })),
 ];
 
 /* ─── Category tabs ──────────────────────────────────────────────── */
 const CATS = [
-  { id: 'avatarFrame', label: 'AVATARS', icon: '💫' },
-  { id: 'banner', label: 'BANNERS', icon: '🎌' },
-  { id: 'background', label: 'WALLPAPERS', icon: '🌌' },
+  { id: 'avatarFrame', label: 'AVATARS',    icon: '💫' },
+  { id: 'banner',      label: 'BANNERS',    icon: '🎌' },
+  { id: 'background',  label: 'WALLPAPERS', icon: '🌌' },
+  { id: 'dice',        label: 'DICE',       icon: '🎲' },
+  { id: 'board',       label: 'BOARD',      icon: '🏁' },
+  { id: 'tokens',      label: 'TOKENS',     icon: '♟️' },
 ];
 
 /* ─── Mini previews for existing skins ───────────────────────────── */
@@ -193,8 +190,8 @@ const ShopPage = () => {
 
   // Merge all item types into one flat list
   const ALL_ITEMS = [
-    ...BANNERS.map(b => ({ ...b, cat: 'banner' })),
     ...AVATAR_FRAMES.map(a => ({ ...a, cat: 'avatarFrame' })),
+    ...BANNERS.map(b => ({ ...b, cat: 'banner' })),
     ...BACKGROUNDS.map(b => ({ ...b, cat: 'background' })),
     ...SKIN_ITEMS,
   ];

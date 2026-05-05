@@ -3,6 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Lock } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
+import { BANNERS, AVATAR_FRAMES, BACKGROUNDS } from '../data/cosmeticsData';
+import { AnimatedBanner } from '../components/cosmetics/AnimatedBanners';
+import { AnimatedAvatarFrame } from '../components/cosmetics/AnimatedAvatarFrames';
+import { BACKGROUND_COMPONENTS } from '../components/cosmetics/AnimatedBackgrounds';
 
 /* ─── Dice skins ─────────────────────────────────────────────────── */
 export const DICE_SKINS = {
@@ -35,10 +39,19 @@ export const TOKEN_SKINS = {
 };
 
 const CATS = [
-  { id: 'dice',   label: 'Dice',   icon: '🎲', key: 'diceSkin'  },
-  { id: 'board',  label: 'Board',  icon: '🏁', key: 'boardSkin' },
-  { id: 'tokens', label: 'Tokens', icon: '♟️', key: 'tokenSkin' },
+  { id: 'dice',        label: 'Dice',      icon: '🎲', key: 'diceSkin'      },
+  { id: 'board',       label: 'Board',     icon: '🏁', key: 'boardSkin'     },
+  { id: 'tokens',      label: 'Tokens',    icon: '♟️', key: 'tokenSkin'     },
+  { id: 'avatarFrame', label: 'Avatars',   icon: '💫', key: 'avatarFrameId' },
+  { id: 'banner',      label: 'Banners',   icon: '🎌', key: 'bannerId'      },
+  { id: 'background',  label: 'Wallpapers',icon: '🌌', key: 'backgroundId'  },
 ];
+
+const COSMETIC_LISTS = {
+  avatarFrame: AVATAR_FRAMES,
+  banner:      BANNERS,
+  background:  BACKGROUNDS,
+};
 
 const ALL_SKINS = { dice: DICE_SKINS, board: BOARD_SKINS, tokens: TOKEN_SKINS };
 
@@ -89,38 +102,50 @@ const CollectionPage = () => {
   const navigate = useNavigate();
   const { user, cosmetics, setCosmetic, addToast } = useGameStore();
   const [cat, setCat] = useState('dice');
-
   const [owned, setOwned] = useState([]);
 
   useEffect(() => {
-    const key = `lf_owned_skins_${user?.uid || 'guest'}`;
-    try {
-      setOwned(JSON.parse(localStorage.getItem(key) || '[]'));
-    } catch {
-      setOwned([]);
-    }
+    const key = `lf_owned_cosmetics_${user?.uid || 'guest'}`;
+    try { setOwned(JSON.parse(localStorage.getItem(key) || '[]')); }
+    catch { setOwned([]); }
   }, [user?.uid]);
 
-  const currentCat  = CATS.find(c => c.id === cat);
-  
-  // Dynamically map over skins and apply the 'unlocked' state based on the user's owned list
-  const skins = Object.entries(ALL_SKINS[cat]).map(([id, skin]) => {
-    const isFree = skin.unlocked === true;
-    const shopId = `${currentCat.id}_${id}`;
-    return [id, { ...skin, unlocked: isFree || owned.includes(shopId) }];
-  });
+  const currentCat = CATS.find(c => c.id === cat);
+  const isCosmeticCat = ['avatarFrame', 'banner', 'background'].includes(cat);
 
-  const selectedId  = cosmetics?.[currentCat.key] || Object.keys(ALL_SKINS[cat])[0];
-  const totalSkins  = skins.length;
-  const unlockedCnt = skins.filter(([,s]) => s.unlocked).length;
+  // --- Skin categories (dice / board / tokens) ---
+  const skins = !isCosmeticCat
+    ? Object.entries(ALL_SKINS[cat]).map(([id, skin]) => {
+        const isFree = skin.unlocked === true;
+        const shopId = `${currentCat.id}_${id}`;
+        return [id, { ...skin, unlocked: isFree || owned.includes(shopId) }];
+      })
+    : [];
 
-  const handleSelect = (id, skin) => {
-    if (!skin.unlocked) {
-      addToast('Unlock this skin in the Shop! 🛒', 'info');
+  // --- Cosmetic categories (avatarFrame / banner / background) ---
+  const cosmeticItems = isCosmeticCat
+    ? (COSMETIC_LISTS[cat] || []).map(item => ({
+        ...item,
+        unlocked: item.free || item.price === 0 || owned.includes(item.id),
+      }))
+    : [];
+
+  const selectedId = isCosmeticCat
+    ? (cosmetics?.[currentCat.key] || (COSMETIC_LISTS[cat]?.[0]?.id))
+    : (cosmetics?.[currentCat.key] || Object.keys(ALL_SKINS[cat] || {})[0]);
+
+  const totalSkins  = isCosmeticCat ? cosmeticItems.length : skins.length;
+  const unlockedCnt = isCosmeticCat
+    ? cosmeticItems.filter(i => i.unlocked).length
+    : skins.filter(([,s]) => s.unlocked).length;
+
+  const handleSelect = (id, item) => {
+    if (!item.unlocked) {
+      addToast('Unlock this in the Shop! 🛒', 'info');
       return;
     }
     setCosmetic(currentCat.key, id);
-    addToast(`${skin.name} equipped! ✓`, 'success');
+    addToast(`${item.name || item.label} equipped! ✓`, 'success');
   };
 
   return (
@@ -180,21 +205,27 @@ const CollectionPage = () => {
         ))}
       </div>
 
-      {/* ── Currently equipped label ──────────────────────────────── */}
+      {/* ── Currently equipped label ───────────────────────────────────────── */}
       <div style={{ padding: '10px 16px 2px' }}>
         <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 12, color: '#6B4C2A', fontWeight: 700 }}>
-          Equipped: <span style={{ color: '#FFD700' }}>{ALL_SKINS[cat][selectedId]?.name}</span>
+          Equipped:{' '}
+          <span style={{ color: '#FFD700' }}>
+            {isCosmeticCat
+              ? (COSMETIC_LISTS[cat]?.find(i => i.id === selectedId)?.label || '—')
+              : (ALL_SKINS[cat]?.[selectedId]?.name || '—')}
+          </span>
           {' · '}changes apply in your next game
         </p>
       </div>
 
-      {/* ── Skin List ─────────────────────────────────────────────── */}
+      {/* ── Items List (skins + cosmetics) ────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div key={cat} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
           style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 16px' }}
         >
-          {skins.map(([id, skin], i) => {
+          {/* ── Skin categories (dice / board / tokens) ── */}
+          {!isCosmeticCat && skins.map(([id, skin], i) => {
             const selected = selectedId === id;
             return (
               <motion.div key={id}
@@ -207,66 +238,94 @@ const CollectionPage = () => {
                   position: 'relative', borderRadius: 18, overflow: 'hidden',
                   border: `2px solid ${selected ? '#FFD700' : skin.unlocked ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.05)'}`,
                   background: selected ? 'rgba(255,215,0,0.07)' : skin.unlocked ? 'rgba(40,29,20,0.88)' : 'rgba(18,12,8,0.88)',
-                  cursor: skin.unlocked ? 'pointer' : 'default',
-                  opacity: skin.unlocked ? 1 : 0.6,
+                  cursor: skin.unlocked ? 'pointer' : 'default', opacity: skin.unlocked ? 1 : 0.6,
                   backdropFilter: 'blur(8px)',
                   boxShadow: selected ? '0 0 0 1px #FFD70044, 0 8px 24px rgba(255,215,0,0.12)' : '0 4px 16px rgba(0,0,0,0.3)',
                   transition: 'border-color 0.2s',
                 }}
               >
-                {/* Active left bar */}
-                {selected && (
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg,#FFD700,#B8860B)', borderRadius: '4px 0 0 4px' }} />
-                )}
-
+                {selected && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg,#FFD700,#B8860B)', borderRadius: '4px 0 0 4px' }} />}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px 14px 18px' }}>
-                  {/* Skin preview */}
                   {cat === 'dice'   && <DicePreview  skin={skin} />}
                   {cat === 'board'  && <BoardPreview skin={skin} />}
                   {cat === 'tokens' && <TokenPreview skin={skin} />}
-
-                  {/* Text info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 15 }}>{skin.icon}</span>
-                      <span style={{ fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 14, color: selected ? '#FFD700' : '#FFF5E1' }}>
-                        {skin.name}
-                      </span>
-                      {selected && (
-                        <span style={{ background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 99, letterSpacing: 1 }}>
-                          EQUIPPED
-                        </span>
-                      )}
+                      <span style={{ fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 14, color: selected ? '#FFD700' : '#FFF5E1' }}>{skin.name}</span>
+                      {selected && <span style={{ background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 99, letterSpacing: 1 }}>EQUIPPED</span>}
                     </div>
-                    <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 12, color: '#7A5C40', fontWeight: 600 }}>
-                      {skin.desc}
-                    </p>
+                    <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 12, color: '#7A5C40', fontWeight: 600 }}>{skin.desc}</p>
                   </div>
-
-                  {/* Status icon */}
                   <div style={{ flexShrink: 0 }}>
                     {selected ? (
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#B8860B,#FFD700)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Check size={14} color="#1A120B" strokeWidth={3} />
-                      </div>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#B8860B,#FFD700)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} color="#1A120B" strokeWidth={3} /></div>
                     ) : !skin.unlocked ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Lock size={13} color="#6B4C2A" />
-                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Lock size={13} color="#6B4C2A" /></div>
                     ) : (
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,215,0,0.15)' }} />
-                      </div>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,215,0,0.15)' }} /></div>
                     )}
                   </div>
                 </div>
-
-                {/* Locked hint */}
                 {!skin.unlocked && (
                   <div style={{ position: 'absolute', bottom: 8, right: 14, pointerEvents: 'none' }}>
                     <span style={{ fontFamily: "'Quicksand',sans-serif", fontSize: 10, color: '#4A3020', fontWeight: 700 }}>
                       Unlock in Shop →
                     </span>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+
+          {/* ── Cosmetic categories (avatarFrame / banner / background) ── */}
+          {isCosmeticCat && cosmeticItems.map((item, i) => {
+            const selected = selectedId === item.id;
+            const BgC = cat === 'background' ? BACKGROUND_COMPONENTS[item.id] : null;
+            return (
+              <motion.div key={item.id}
+                initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.04 }}
+                whileHover={item.unlocked ? { scale: 1.02, x: 3 } : {}}
+                whileTap={item.unlocked ? { scale: 0.98 } : {}}
+                onClick={() => handleSelect(item.id, item)}
+                style={{
+                  position: 'relative', borderRadius: 18, overflow: 'hidden',
+                  border: `2px solid ${selected ? '#FFD700' : item.unlocked ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.05)'}`,
+                  background: selected ? 'rgba(255,215,0,0.07)' : item.unlocked ? 'rgba(40,29,20,0.88)' : 'rgba(18,12,8,0.88)',
+                  cursor: item.unlocked ? 'pointer' : 'default', opacity: item.unlocked ? 1 : 0.6,
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: selected ? '0 0 0 1px #FFD70044, 0 8px 24px rgba(255,215,0,0.12)' : '0 4px 16px rgba(0,0,0,0.3)',
+                  transition: 'border-color 0.2s',
+                }}
+              >
+                {selected && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(180deg,#FFD700,#B8860B)', borderRadius: '4px 0 0 4px' }} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px 12px 18px' }}>
+                  <div style={{ width: 72, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                    {cat === 'banner'      && <AnimatedBanner bannerId={item.id} mini />}
+                    {cat === 'avatarFrame' && <div style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'100%', height:'100%', background:'rgba(0,0,0,0.3)', borderRadius:10 }}><AnimatedAvatarFrame frameId={item.id} size={44} /></div>}
+                    {cat === 'background'  && <div style={{ width:'100%', height:'100%', borderRadius:10, overflow:'hidden', position:'relative' }}>{BgC && <BgC />}</div>}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: "'Cinzel',serif", fontWeight: 700, fontSize: 13, color: selected ? '#FFD700' : '#FFF5E1' }}>{item.label}</span>
+                      {selected && <span style={{ background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 99, letterSpacing: 1 }}>EQUIPPED</span>}
+                    </div>
+                    <p style={{ margin: 0, fontFamily: "'Quicksand',sans-serif", fontSize: 11, color: '#7A5C40', fontWeight: 600 }}>{item.description}</p>
+                  </div>
+                  <div style={{ flexShrink: 0 }}>
+                    {selected ? (
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#B8860B,#FFD700)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={14} color="#1A120B" strokeWidth={3} /></div>
+                    ) : !item.unlocked ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Lock size={13} color="#6B4C2A" /></div>
+                    ) : (
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,215,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,215,0,0.15)' }} /></div>
+                    )}
+                  </div>
+                </div>
+                {!item.unlocked && (
+                  <div style={{ position: 'absolute', bottom: 8, right: 14, pointerEvents: 'none' }}>
+                    <span style={{ fontFamily: "'Quicksand',sans-serif", fontSize: 10, color: '#4A3020', fontWeight: 700 }}>Unlock in Shop →</span>
                   </div>
                 )}
               </motion.div>
