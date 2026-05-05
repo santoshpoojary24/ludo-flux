@@ -384,45 +384,61 @@ const GamePage = () => {
         </div>
       </div>
 
-      {/* ── Turn Banner ── */}
-      {gameState.status === 'playing' && !gameState.winner && (
-        <motion.div
-          key={turnColor}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            ...styles.turnBanner,
-            borderLeft: `4px solid var(--token-${turnColor})`,
-            background: `linear-gradient(90deg, var(--token-${turnColor})22, transparent)`,
-            boxShadow: `0 0 12px var(--token-${turnColor})33`,
-          }}
-        >
-          <motion.div
-            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.1 }}
-            style={{
-              width: 10, height: 10, borderRadius: '50%',
-              background: `var(--token-${turnColor})`,
-              boxShadow: `0 0 12px var(--token-${turnColor}), 0 0 24px var(--token-${turnColor})88`
-            }}
-          />
-          <span style={{
-            fontWeight: 900, fontSize: 13, letterSpacing: 2,
-            textTransform: 'uppercase', color: 'var(--text)',
-            fontFamily: "'Quicksand', sans-serif"
-          }}>
-            {isMyTurn
-              ? '🎯 Your Turn — ' + (diceValue ? 'Pick a token' : 'Roll the dice!')
-              : `${turnPlayer?.isBot ? 'Bot ' + turnColor : turnPlayer?.username || turnColor}'s Turn`}
-          </span>
-        </motion.div>
-      )}
 
       {/* ── Board ── */}
       <div style={styles.boardWrap}>
         <LudoBoard onMoveToken={handleMoveToken} myColor={myColor} />
       </div>
+
+      {/* ── Turn Banner (below board) ── */}
+      {gameState.status === 'playing' && !gameState.winner && (
+        <motion.div
+          key={turnColor}
+          initial={{ opacity: 0, y: 8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.28, ease: [0.4,0,0.2,1] }}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            padding: '10px 20px', margin: '4px 16px 0',
+            borderRadius: 14,
+            background: `linear-gradient(90deg, var(--token-${turnColor})18, var(--token-${turnColor})10, transparent)`,
+            border: `1.5px solid var(--token-${turnColor})44`,
+            boxShadow: `0 0 18px var(--token-${turnColor})22`,
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          {/* Pulsing color dot */}
+          <motion.div
+            animate={{ scale: [1, 1.55, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ repeat: Infinity, duration: 1.1 }}
+            style={{
+              width: 11, height: 11, borderRadius: '50%',
+              background: `var(--token-${turnColor})`,
+              boxShadow: `0 0 10px var(--token-${turnColor}), 0 0 22px var(--token-${turnColor})88`,
+              flexShrink: 0,
+            }}
+          />
+          {/* Color name label */}
+          <span style={{
+            fontFamily: "'Cinzel', serif", fontWeight: 900,
+            fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
+            color: `var(--token-${turnColor})`, opacity: 0.9,
+          }}>
+            {turnColor}
+          </span>
+          <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.12)' }} />
+          {/* Turn instruction */}
+          <span style={{
+            fontFamily: "'Quicksand', sans-serif", fontWeight: 900,
+            fontSize: 13, letterSpacing: 1, color: 'var(--text)',
+          }}>
+            {isMyTurn
+              ? (diceValue ? '🎯 Pick a token' : '🎲 Roll the dice!')
+              : `${turnPlayer?.isBot ? '🤖 Bot' : (turnPlayer?.username || turnColor)}'s turn`}
+          </span>
+        </motion.div>
+      )}
+
 
       {/* ── Dice & Controls ── */}
       <div style={styles.controls}>

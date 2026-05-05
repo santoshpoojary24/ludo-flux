@@ -146,11 +146,10 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
   }, [gameState?.diceValue]);
   const diceValue = activeDiceValue;
 
-  /* Board rotation so current player's home is always bottom-left */
-  const boardRotation = (() => {
-    const map = { blue: 0, red: -90, green: -180, yellow: -270 };
-    return myColor ? map[myColor] : 0;
-  })();
+  /* Board rotates each turn — active player's home is always at the bottom */
+  const ROTATION_MAP = { blue: 0, red: 90, green: 180, yellow: 270 };
+  const boardRotation = turnColor ? (ROTATION_MAP[turnColor] ?? 0) : 0;
+
 
   /* Auto-move when only one token is movable */
   useEffect(() => {
@@ -227,7 +226,8 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         flexShrink: 0,
         transform: `rotate(${boardRotation}deg)`,
         transformOrigin: 'center',
-        transition: 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.6s ease',
+        transition: 'transform 0.55s cubic-bezier(0.34,1.2,0.64,1), background 0.6s ease',
+
       }}
     >
       {/* ── Subtle wood grain texture overlay ──────────────────────────────── */}
