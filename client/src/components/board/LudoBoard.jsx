@@ -56,7 +56,10 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
   const { gameState, user, settings } = useGameStore();
   const [captureFlash, setCaptureFlash] = useState(null);
   const [visualTokens, setVisualTokens] = useState(null);
+  const [safeBadge, setSafeBadge] = useState(null);   // { key, coord }
+  const [homeBadge, setHomeBadge] = useState(null);   // { key, color }
   const prevTokens = useRef(null);
+
 
   /* ── Step-by-step token movement animation ─────────────────────────────────  */
   useEffect(() => {
@@ -110,10 +113,24 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
           if (next[step.color]?.[step.index]) next[step.color][step.index].position = step.position;
           return next;
         });
+        // Safe zone arrival badge
+        if (SAFE_IDX.has(step.position)) {
+          const coord = getCoord(step.color, step.position);
+          if (coord) {
+            setSafeBadge({ key: Date.now(), coord });
+            setTimeout(() => setSafeBadge(null), 900);
+          }
+        }
+        // Home arrival celebration
+        if (step.position === 56) {
+          setHomeBadge({ key: Date.now(), color: step.color });
+          setTimeout(() => setHomeBadge(null), 1100);
+        }
         stepIndex++;
         setTimeout(animateStep, 185);
       };
       animateStep();
+
     } else {
       setVisualTokens(newVisual);
     }
@@ -516,8 +533,66 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
           );
         });
       })}
+
+      {/* ── SAFE! badge ────────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {safeBadge && (
+          <motion.div
+            key={safeBadge.key}
+            initial={{ opacity: 0, y: 0, scale: 0.6 }}
+            animate={{ opacity: 1, y: -28, scale: 1 }}
+            exit={{ opacity: 0, y: -48, scale: 0.8 }}
+            transition={{ duration: 0.4, ease: 'backOut' }}
+            style={{
+              position: 'absolute',
+              left: `${safeBadge.coord.c * CELL + CELL / 2}%`,
+              top: `${safeBadge.coord.r * CELL}%`,
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(135deg,#B8860B,#FFD700)',
+              color: '#1A0A00',
+              fontFamily: "'Cinzel',serif", fontWeight: 900,
+              fontSize: 'clamp(8px,1.5vw,11px)', letterSpacing: 1,
+              padding: '3px 8px', borderRadius: 99,
+              whiteSpace: 'nowrap', pointerEvents: 'none',
+              boxShadow: '0 0 12px rgba(255,215,0,0.8)',
+              zIndex: 50,
+            }}
+          >
+            ⭐ SAFE!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── HOME! badge ────────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {homeBadge && (
+          <motion.div
+            key={homeBadge.key}
+            initial={{ opacity: 0, scale: 0.5, y: 0 }}
+            animate={{ opacity: 1, scale: [0.5, 1.3, 1], y: -40 }}
+            exit={{ opacity: 0, scale: 0.6, y: -60 }}
+            transition={{ duration: 0.55, ease: 'backOut' }}
+            style={{
+              position: 'absolute', top: '40%', left: '50%',
+              transform: 'translate(-50%,-50%)',
+              background: `linear-gradient(135deg,var(--token-${homeBadge.color}),#fff)`,
+              color: '#1A0A00',
+              fontFamily: "'Cinzel',serif", fontWeight: 900,
+              fontSize: 'clamp(10px,2vw,14px)', letterSpacing: 2,
+              padding: '5px 14px', borderRadius: 99,
+              whiteSpace: 'nowrap', pointerEvents: 'none',
+              boxShadow: `0 0 20px var(--token-${homeBadge.color})`,
+              zIndex: 50,
+            }}
+          >
+            🏠 HOME!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.div>
   );
 };
+
 
 export default LudoBoard;
