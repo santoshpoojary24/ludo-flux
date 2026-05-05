@@ -48,4 +48,28 @@ export const BACKGROUNDS = [
   { id:'bg_cosmic',      label:'Cosmic Genesis',    rarity:'legendary', price:3500, description:'Live space simulation with supernovas', type:'background' },
 ];
 
-export const ALL_COSMETICS = [...BANNERS, ...AVATAR_FRAMES, ...BACKGROUNDS];
+export const DICE_SKINS_STORE = [
+  { id: 'dice_obsidian', label: 'Obsidian Dice', rarity: 'rare',      price: 500,  type: 'dice', skinKey: 'obsidian', description: 'Glossy jet-black cube with silver pips' },
+  { id: 'dice_ruby',     label: 'Ruby Dice',     rarity: 'epic',      price: 800,  type: 'dice', skinKey: 'ruby',     description: 'Deep crimson gemstone finish' },
+  { id: 'dice_sapphire', label: 'Sapphire Dice', rarity: 'epic',      price: 800,  type: 'dice', skinKey: 'sapphire', description: 'Royal blue crystal texture' },
+  { id: 'dice_emerald',  label: 'Emerald Dice',  rarity: 'epic',      price: 800,  type: 'dice', skinKey: 'emerald',  description: 'Verdant forest green crystal' },
+  { id: 'dice_gold',     label: 'Gold Crown',    rarity: 'legendary', price: 1500, type: 'dice', skinKey: 'gold',    description: 'Solid 24K gold with royal crown pips' },
+];
+
+export const BOARD_SKINS_STORE = [
+  { id: 'board_marble',    label: 'Marble Board',   rarity: 'rare',      price: 600,  type: 'board', skinKey: 'marble',    description: 'Elegant Italian marble board' },
+  { id: 'board_cosmic',    label: 'Cosmic Board',   rarity: 'epic',      price: 1000, type: 'board', skinKey: 'cosmic',    description: 'Deep space nebula with pulsing stars' },
+  { id: 'board_jade',      label: 'Jade Temple',    rarity: 'epic',      price: 1000, type: 'board', skinKey: 'jade',      description: 'Ancient jade stone with gold accents' },
+  { id: 'board_neon',      label: 'Neon Grid',      rarity: 'legendary', price: 1200, type: 'board', skinKey: 'neon',      description: 'Cyberpunk holographic neon grid' },
+  { id: 'board_parchment', label: 'Ancient Scroll', rarity: 'epic',      price: 800,  type: 'board', skinKey: 'parchment', description: 'Worn parchment with classic ink' },
+];
+
+export const TOKEN_SKINS_STORE = [
+  { id: 'token_knight',  label: 'Chess Knights', rarity: 'rare',      price: 600,  type: 'tokens', skinKey: 'knight',  description: 'Carved chess piece style tokens' },
+  { id: 'token_crystal', label: 'Crystal Orbs',  rarity: 'epic',      price: 1000, type: 'tokens', skinKey: 'crystal', description: 'Glowing crystal spheres with aura' },
+  { id: 'token_fire',    label: 'Flame Tokens',  rarity: 'legendary', price: 2200, type: 'tokens', skinKey: 'fire',    description: 'Living flame pieces that glow' },
+  { id: 'token_metal',   label: 'Metal Crowns',  rarity: 'rare',      price: 1000, type: 'tokens', skinKey: 'metal',   description: 'Polished metal crowns' },
+  { id: 'token_emoji',   label: 'Emoji Crew',    rarity: 'common',    price: 400,  type: 'tokens', skinKey: 'emoji',   description: 'Fun emoji faces for all players' },
+];
+
+export const ALL_COSMETICS = [...BANNERS, ...AVATAR_FRAMES, ...BACKGROUNDS, ...DICE_SKINS_STORE, ...BOARD_SKINS_STORE, ...TOKEN_SKINS_STORE];
