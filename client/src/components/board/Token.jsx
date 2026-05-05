@@ -1,145 +1,173 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/* ─── Jewel colour palette per player ───────────────────────────── */
+/* ─── Gem-tone color palette per player (jewel aesthetic) ─── */
 const COLOR_MAP = {
   red: {
-    base:      '#C0392B',
-    mid:       'hsl(348,75%,50%)',
-    highlight: 'hsl(348,90%,72%)',
-    shadow:    'hsl(348,80%,18%)',
-    rim:       'hsl(348,60%,26%)',
-    glow:      'rgba(192,57,43,0.8)',
-    css:       'var(--token-red)',
+    base: 'hsl(348, 80%, 42%)',          // Deep Ruby
+    mid: 'hsl(348, 75%, 55%)',
+    highlight: 'hsl(348, 90%, 72%)',
+    shadow: 'hsl(348, 80%, 22%)',
+    rim: 'hsl(348, 60%, 30%)',
+    glow: 'rgba(180, 30, 60, 0.7)',
   },
   green: {
-    base:      '#1A7A4A',
-    mid:       'hsl(152,65%,38%)',
-    highlight: 'hsl(152,75%,60%)',
-    shadow:    'hsl(152,70%,12%)',
-    rim:       'hsl(152,50%,20%)',
-    glow:      'rgba(26,122,74,0.8)',
-    css:       'var(--token-green)',
+    base: 'hsl(152, 70%, 28%)',          // Deep Emerald
+    mid: 'hsl(152, 65%, 40%)',
+    highlight: 'hsl(152, 75%, 60%)',
+    shadow: 'hsl(152, 70%, 14%)',
+    rim: 'hsl(152, 50%, 22%)',
+    glow: 'rgba(20, 130, 70, 0.7)',
   },
   yellow: {
-    base:      '#B8860B',
-    mid:       'hsl(40,90%,50%)',
-    highlight: 'hsl(45,100%,72%)',
-    shadow:    'hsl(36,85%,20%)',
-    rim:       'hsl(36,65%,26%)',
-    glow:      'rgba(184,134,11,0.8)',
-    css:       'var(--token-yellow)',
+    base: 'hsl(40, 85%, 38%)',           // Rich Gold
+    mid: 'hsl(40, 90%, 52%)',
+    highlight: 'hsl(45, 100%, 72%)',
+    shadow: 'hsl(36, 85%, 22%)',
+    rim: 'hsl(36, 65%, 28%)',
+    glow: 'rgba(200, 150, 20, 0.7)',
   },
   blue: {
-    base:      '#1A4A8A',
-    mid:       'hsl(220,80%,45%)',
-    highlight: 'hsl(220,90%,70%)',
-    shadow:    'hsl(220,85%,16%)',
-    rim:       'hsl(220,60%,22%)',
-    glow:      'rgba(26,74,138,0.8)',
-    css:       'var(--token-blue)',
+    base: 'hsl(220, 85%, 32%)',          // Royal Sapphire
+    mid: 'hsl(220, 80%, 48%)',
+    highlight: 'hsl(220, 90%, 70%)',
+    shadow: 'hsl(220, 85%, 18%)',
+    rim: 'hsl(220, 60%, 26%)',
+    glow: 'rgba(20, 60, 180, 0.7)',
   },
 };
 
+/**
+ * Premium 3D Jewel-tone Token Component
+ * - Layered radial gradients for a gem-cut 3D appearance
+ * - Idle bobbing animation via CSS class (prefers-reduced-motion safe)
+ * - Pulsing glow ring when clickable
+ */
 const Token = ({
   color = 'red',
   onClick,
   clickable = false,
-  selected = false,
   boardRotation = 0,
   size = 26,
 }) => {
-  const t = COLOR_MAP[color] || COLOR_MAP.red;
-  const sz = typeof size === 'number' ? `${size}px` : size;
+  const theme = COLOR_MAP[color] || COLOR_MAP.red;
+  const tokenSize = typeof size === 'number' ? `${size}px` : size;
+
+  /* Hover lift + glow when clickable */
+  const hoverVariant = {
+    scale: 1.22,
+    y: -5,
+    filter: `drop-shadow(0 0 10px ${theme.glow}) drop-shadow(0 6px 12px rgba(0,0,0,0.5))`,
+  };
+
+  const tapVariant = {
+    scale: 0.88,
+    y: 0,
+    filter: `drop-shadow(0 1px 3px rgba(0,0,0,0.4))`,
+  };
 
   return (
     <motion.div
       onClick={onClick}
+      whileHover={clickable ? hoverVariant : {}}
+      whileTap={clickable ? tapVariant : {}}
       initial={{ scale: 0, opacity: 0 }}
       animate={{
-        scale: selected ? 1.25 : 1,
+        scale: 1,
         opacity: 1,
         rotate: -boardRotation,
-        y: selected ? -6 : 0,
       }}
-      whileHover={clickable && !selected ? { scale: 1.18, y: -5 } : {}}
-      whileTap={clickable ? { scale: 0.88 } : {}}
       transition={{
-        type: 'spring', stiffness: 380, damping: 22,
+        type: 'spring',
+        stiffness: 380,
+        damping: 22,
         rotate: { duration: 0.35, ease: 'easeOut' },
       }}
-      className={!clickable && !selected ? 'token-idle' : ''}
+      /* Token bobbing: CSS class with @keyframes tokenBob defined in index.css */
+      className={!clickable ? 'token-idle' : ''}
       style={{
-        width: sz, height: sz,
+        width: tokenSize,
+        height: tokenSize,
         position: 'relative',
         cursor: clickable ? 'pointer' : 'default',
-        zIndex: selected ? 20 : clickable ? 10 : 1,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transformOrigin: 'center bottom',
-        filter: selected
-          ? `drop-shadow(0 0 8px ${t.glow}) drop-shadow(0 0 16px ${t.glow})`
-          : clickable
-          ? `drop-shadow(0 0 6px ${t.glow}) drop-shadow(0 4px 8px rgba(0,0,0,0.5))`
-          : 'none',
+        zIndex: clickable ? 10 : 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transformOrigin: 'center',
+        /* Respect prefers-reduced-motion */
+        animationPlayState: 'running',
       }}
     >
-      {/* ── Main gem body ──────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: '50%',
-        background: `radial-gradient(circle at 38% 36%,
-          ${t.highlight} 0%,
-          ${t.mid}       32%,
-          ${t.base}      60%,
-          ${t.shadow}    85%,
-          ${t.rim}       100%)`,
-        boxShadow: `
-          inset 0 2px 4px rgba(255,255,255,0.6),
-          inset 0 -2px 4px rgba(0,0,0,0.4),
-          0 4px 8px rgba(0,0,0,0.5),
-          0 2px 3px rgba(0,0,0,0.3)
-        `,
-        border: `1.5px solid ${t.rim}`,
-      }} />
+      {/* ── Outer rim (darkest layer — gives depth) ───────────────── */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 40% 38%,
+            ${theme.highlight} 0%,
+            ${theme.mid} 35%,
+            ${theme.base} 60%,
+            ${theme.shadow} 85%,
+            ${theme.rim} 100%)`,
+          boxShadow: `
+            inset 3px 3px 6px rgba(255,255,255,0.35),
+            inset -3px -3px 6px rgba(0,0,0,0.5),
+            0 6px 16px rgba(0,0,0,0.45),
+            0 2px 4px rgba(0,0,0,0.3)
+          `,
+          border: `1.5px solid ${theme.rim}`,
+        }}
+      />
 
-      {/* ── Specular highlight ─────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute', top: '11%', left: '13%',
-        width: '34%', height: '28%',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.72) 0%, transparent 100%)',
-        transform: 'rotate(-20deg)', pointerEvents: 'none',
-      }} />
+      {/* ── Inner specular highlight (top-left gem sparkle) ───────── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '12%',
+          left: '14%',
+          width: '32%',
+          height: '28%',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)`,
+          transform: 'rotate(-20deg)',
+          pointerEvents: 'none',
+        }}
+      />
 
-      {/* ── Centre gem dot ─────────────────────────────────────────── */}
-      <div style={{
-        width: '28%', height: '28%', borderRadius: '50%', position: 'relative', zIndex: 1,
-        background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.45), ${t.shadow}99)`,
-        boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.45)',
-        border: '1px solid rgba(255,255,255,0.1)',
-      }} />
+      {/* ── Centre gem facet dot ───────────────────────────────────── */}
+      <div
+        style={{
+          width: '30%',
+          height: '30%',
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), ${theme.shadow}88)`,
+          boxShadow: `inset 1px 1px 2px rgba(0,0,0,0.4)`,
+          border: `1px solid rgba(255,255,255,0.12)`,
+          position: 'relative',
+          zIndex: 1,
+        }}
+      />
 
-      {/* ── Clickable pulse ring ───────────────────────────────────── */}
-      {clickable && !selected && (
+      {/* ── Clickable pulsing glow ring (framer-motion) ───────────── */}
+      {clickable && (
         <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [0.35, 0.75, 0.35] }}
-          transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute', inset: -5, borderRadius: '50%', zIndex: -1,
-            background: `radial-gradient(circle, ${t.glow} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+          animate={{
+            scale: [1, 1.4, 1],
+            opacity: [0.4, 0.75, 0.4],
           }}
-        />
-      )}
-
-      {/* ── Selected: bright white halo pulsing ───────────────────── */}
-      {selected && (
-        <motion.div
-          animate={{ scale: [1, 1.6, 1], opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
           style={{
-            position: 'absolute', inset: -7, borderRadius: '50%', zIndex: -1,
-            background: 'radial-gradient(circle, rgba(255,255,255,0.85) 0%, transparent 65%)',
-            boxShadow: `0 0 12px 4px ${t.glow}`,
+            position: 'absolute',
+            inset: -5,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)`,
+            zIndex: -1,
             pointerEvents: 'none',
           }}
         />
