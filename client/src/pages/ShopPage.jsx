@@ -38,13 +38,9 @@ const SKIN_ITEMS = [
 
 /* ─── Category tabs ──────────────────────────────────────────────── */
 const CATS = [
-  { id:'all',       label:'All',         icon:'🛒' },
-  { id:'banner',    label:'Banners',      icon:'🎌' },
-  { id:'avatarFrame',label:'Avatar Rings', icon:'💫' },
-  { id:'background',label:'Backgrounds',  icon:'🌌' },
-  { id:'dice',      label:'Dice',         icon:'🎲' },
-  { id:'board',     label:'Board',        icon:'🏁' },
-  { id:'tokens',    label:'Tokens',       icon:'♟️' },
+  { id:'avatarFrame',label:'AVATARS', icon:'💫' },
+  { id:'banner',     label:'BANNERS', icon:'🎌' },
+  { id:'background', label:'WALLPAPERS', icon:'🌌' },
 ];
 
 /* ─── Mini previews for existing skins ───────────────────────────── */
@@ -68,21 +64,13 @@ const SkinPreview = ({ cat, skinKey }) => {
   return null;
 };
 
-/* ─── Background mini preview ──────────────────────────────────── */
 const BgPreview = ({ bgId }) => {
-  const style = {
-    ember:       { background:'linear-gradient(to top,#FF4500,#1A1A1A)' },
-    ocean:       { background:'linear-gradient(to bottom,#001233,#000814)' },
-    lava:        { background:'linear-gradient(135deg,#3A0A00,#FF4500 80%)' },
-    storm:       { background:'linear-gradient(to bottom,#050810,#1A2040)' },
-    galaxy:      { background:'radial-gradient(ellipse at center,#1A1A4E,#050508)' },
-    volcanic:    { background:'linear-gradient(to bottom,#3A0A00,#0A0000)' },
-    antigravity: { background:'linear-gradient(135deg,#0A2040,#1A3050)' },
-    inferno:     { background:'linear-gradient(to top,#FF1A00,#FF8C00,#FFD700)' },
-    default:     { background:'linear-gradient(160deg,#1A120B,#0D0805)' },
-  };
-  const key = bgId.replace('bg_','');
-  return <div style={{ width:52, height:52, borderRadius:10, ...(style[key] || style.default) }} />;
+  const BgC = BACKGROUND_COMPONENTS[bgId.replace('bg_','')];
+  return (
+    <div style={{ width:'100%', height:'100%', borderRadius:10, position:'relative', overflow:'hidden' }}>
+       {BgC && <BgC />}
+    </div>
+  );
 };
 
 /* ─── Confirm Modal ──────────────────────────────────────────────── */
@@ -94,18 +82,18 @@ const ConfirmModal = ({ item, coins, onConfirm, onCancel }) => (
     <motion.div initial={{ scale:0.85, y:20 }} animate={{ scale:1, y:0 }} exit={{ scale:0.85, y:20 }}
       style={{ background:'rgba(15,10,5,0.98)', border:'1px solid rgba(255,215,0,0.3)', borderRadius:24, padding:28, maxWidth:320, width:'100%', textAlign:'center' }}>
       <div style={{ fontSize:32, marginBottom:12 }}>🛒</div>
-      <h3 style={{ margin:'0 0 8px', 'Cinzel',serif", fontWeight:900, color:'#FFD700', fontSize:16 }}>Confirm Purchase</h3>
-      <p style={{ margin:'0 0 6px', 'Quicksand',sans-serif", fontSize:15, color:'#FFF5E1' }}>{item.label}</p>
-      <p style={{ margin:'0 0 20px', 'Quicksand',sans-serif", fontSize:13, color:'#A08060' }}>
+      <h3 style={{ margin:'0 0 8px', fontFamily:"'Cinzel', serif", fontWeight:900, color:'#FFD700', fontSize:16 }}>Confirm Purchase</h3>
+      <p style={{ margin:'0 0 6px', fontFamily:"'Quicksand', sans-serif", fontSize:15, color:'#FFF5E1' }}>{item.label}</p>
+      <p style={{ margin:'0 0 20px', fontFamily:"'Quicksand', sans-serif", fontSize:13, color:'#A08060' }}>
         🪙 {item.price.toLocaleString()} coins &nbsp;|&nbsp; Balance after: 🪙 {(coins - item.price).toLocaleString()}
       </p>
       <div style={{ display:'flex', gap:12 }}>
         <motion.button whileHover={{scale:1.04}} whileTap={{scale:0.96}} onClick={onCancel}
-          style={{ flex:1, padding:'12px', borderRadius:14, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', color:'#A08060', sans-serif", fontWeight:700, cursor:'pointer', fontSize:14 }}>
+          style={{ flex:1, padding:'12px', borderRadius:14, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', color:'#A08060', fontFamily:"sans-serif", fontWeight:700, cursor:'pointer', fontSize:14 }}>
           CANCEL
         </motion.button>
         <motion.button whileHover={{scale:1.04}} whileTap={{scale:0.96}} onClick={onConfirm}
-          style={{ flex:1, padding:'12px', borderRadius:14, background:'linear-gradient(135deg,#B8860B,#FFD700)', border:'none', color:'#1A120B', sans-serif", fontWeight:900, cursor:'pointer', fontSize:14 }}>
+          style={{ flex:1, padding:'12px', borderRadius:14, background:'linear-gradient(135deg,#B8860B,#FFD700)', border:'none', color:'#1A120B', fontFamily:"sans-serif", fontWeight:900, cursor:'pointer', fontSize:14 }}>
           BUY 🪙 {item.price.toLocaleString()}
         </motion.button>
       </div>
@@ -122,8 +110,8 @@ const ItemCard = ({ item, owned, equipped, coins, onBuy, onEquip, buying }) => {
   const renderPreview = () => {
     if (item.type === 'banner') return <AnimatedBanner bannerId={item.id} mini />;
     if (item.type === 'avatarFrame') return (
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:4 }}>
-        <AnimatedAvatarFrame frameId={item.id} initial='A' size={52} />
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:4, transform: 'scale(1.1)' }}>
+        <AnimatedAvatarFrame frameId={item.id} initial='A' size={70} />
       </div>
     );
     if (item.type === 'background') return <BgPreview bgId={item.id} />;
@@ -147,34 +135,36 @@ const ItemCard = ({ item, owned, equipped, coins, onBuy, onEquip, buying }) => {
       <div style={{ height:3, background:`linear-gradient(90deg,transparent,${rar.color},transparent)` }} />
 
       {/* Preview area */}
-      <div style={{ height:70, overflow:'hidden', position:'relative', margin:'10px 10px 0' }}>
-        {renderPreview()}
+      <div style={{ height:100, overflow:'hidden', position:'relative', margin:'10px 10px 0', display:'flex', alignItems:'center', justifyContent:'center', perspective: 800 }}>
+        <motion.div style={{ width: '100%', height: '100%', display:'flex', alignItems:'center', justifyContent:'center' }} whileHover={{ rotateY: 180 }} transition={{ duration: 0.6, type: "spring" }}>
+          {renderPreview()}
+        </motion.div>
       </div>
 
       <div style={{ padding:'10px 12px 12px' }}>
         {/* Name + Rarity */}
-        <div style={{ 'Cinzel',serif", fontWeight:700, fontSize:11, color: equipped ? '#FFD700' : '#FFF5E1', marginBottom:5, lineHeight:1.3, letterSpacing:0.5 }}>
+        <div style={{ fontFamily:"'Cinzel', serif", fontWeight:700, fontSize:11, color: equipped ? '#FFD700' : '#FFF5E1', marginBottom:5, lineHeight:1.3, letterSpacing:0.5 }}>
           {item.label}
         </div>
         <div style={{ display:'inline-flex', alignItems:'center', gap:4, background:rar.bg, border:`1px solid ${rar.color}44`, borderRadius:99, padding:'2px 8px', marginBottom:10 }}>
           {item.rarity === 'legendary' && <Star size={8} color={rar.color} fill={rar.color} />}
           {item.rarity === 'epic' && <Zap size={8} color={rar.color} />}
-          <span style={{ fontSize:8, fontWeight:900, color:rar.color, letterSpacing:1, sans-serif" }}>{rar.label}</span>
+          <span style={{ fontSize:8, fontWeight:900, color:rar.color, letterSpacing:1, fontFamily:"sans-serif" }}>{rar.label}</span>
         </div>
 
         {/* Action */}
         {equipped ? (
-          <div style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'linear-gradient(135deg,#B8860B,#FFD700)', color:'#1A120B', sans-serif", fontWeight:900, fontSize:12, textAlign:'center', letterSpacing:1 }}>
+          <div style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'linear-gradient(135deg,#B8860B,#FFD700)', color:'#1A120B', fontFamily:"sans-serif", fontWeight:900, fontSize:12, textAlign:'center', letterSpacing:1 }}>
             🔥 EQUIPPED
           </div>
         ) : owned ? (
           <motion.button whileHover={{scale:1.03}} whileTap={{scale:0.97}} onClick={onEquip}
-            style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', sans-serif", fontWeight:900, fontSize:12, textAlign:'center', cursor:'pointer', letterSpacing:1 }}>
+            style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', fontFamily:"sans-serif", fontWeight:900, fontSize:12, textAlign:'center', cursor:'pointer', letterSpacing:1 }}>
             ✓ APPLY
           </motion.button>
         ) : item.rarity === 'free' || item.price === 0 ? (
           <motion.button whileHover={{scale:1.03}} whileTap={{scale:0.97}} onClick={onEquip}
-            style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', sans-serif", fontWeight:900, fontSize:12, textAlign:'center', cursor:'pointer', letterSpacing:1 }}>
+            style={{ width:'100%', padding:'9px 0', borderRadius:11, background:'rgba(74,222,128,0.12)', border:'1px solid rgba(74,222,128,0.3)', color:'#4ade80', fontFamily:"sans-serif", fontWeight:900, fontSize:12, textAlign:'center', cursor:'pointer', letterSpacing:1 }}>
             FREE — APPLY
           </motion.button>
         ) : (
@@ -182,7 +172,7 @@ const ItemCard = ({ item, owned, equipped, coins, onBuy, onEquip, buying }) => {
             whileHover={canAfford ? {scale:1.03} : {}}
             whileTap={canAfford ? {scale:0.97} : { x:[0,-4,4,-4,4,0] }}
             onClick={canAfford ? onBuy : undefined}
-            style={{ width:'100%', padding:'9px 0', borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', gap:5, background: canAfford ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'rgba(255,255,255,0.04)', border: canAfford ? 'none' : '1px solid rgba(255,255,255,0.07)', color: canAfford ? '#1A120B' : '#5A4030', sans-serif", fontWeight:900, fontSize:12, cursor: canAfford ? 'pointer' : 'default', opacity: isBuying ? 0.7 : 1 }}>
+            style={{ width:'100%', padding:'9px 0', borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', gap:5, background: canAfford ? 'linear-gradient(135deg,#B8860B,#FFD700)' : 'rgba(255,255,255,0.04)', border: canAfford ? 'none' : '1px solid rgba(255,255,255,0.07)', color: canAfford ? '#1A120B' : '#5A4030', fontFamily:"sans-serif", fontWeight:900, fontSize:12, cursor: canAfford ? 'pointer' : 'default', opacity: isBuying ? 0.7 : 1 }}>
             {isBuying ? '⏳ Buying…' : <>🪙 {item.price.toLocaleString()} {!canAfford && <span style={{fontSize:9,opacity:0.7}}>Need more</span>}</>}
           </motion.button>
         )}
@@ -195,7 +185,7 @@ const ItemCard = ({ item, owned, equipped, coins, onBuy, onEquip, buying }) => {
 const ShopPage = () => {
   const navigate = useNavigate();
   const { user, token, addToast, updateUserCoins, cosmetics, setCosmetic } = useGameStore();
-  const [cat, setCat] = useState('all');
+  const [cat, setCat] = useState('avatarFrame');
   const [owned, setOwned] = useState([]);
   const [buying, setBuying] = useState(null);
   const [confirmItem, setConfirmItem] = useState(null);
@@ -254,7 +244,7 @@ const ShopPage = () => {
     setBuying(null);
   };
 
-  const filtered = cat === 'all' ? ALL_ITEMS : ALL_ITEMS.filter(i => i.cat === cat || i.type === cat);
+  const filtered = ALL_ITEMS.filter(i => i.cat === cat || i.type === cat);
 
   return (
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
@@ -271,12 +261,12 @@ const ShopPage = () => {
           <ArrowLeft size={18} />
         </motion.button>
         <div style={{ flex:1 }}>
-          <h1 style={{ margin:0, 'Cinzel',serif", fontWeight:900, fontSize:18, color:'#FF4500', letterSpacing:3, textShadow:'0 0 20px rgba(255,69,0,0.5)' }}>COSMETICS STORE</h1>
-          <p style={{ margin:0, 'Quicksand',sans-serif", fontSize:11, color:'#6A4030' }}>Unlock exclusive animated cosmetics</p>
+          <h1 style={{ margin:0, fontFamily:"'Cinzel', serif", fontWeight:900, fontSize:18, color:'#FF4500', letterSpacing:3, textShadow:'0 0 20px rgba(255,69,0,0.5)' }}>COSMETICS STORE</h1>
+          <p style={{ margin:0, fontFamily:"'Quicksand', sans-serif", fontSize:11, color:'#6A4030' }}>Unlock exclusive animated cosmetics</p>
         </div>
         <div style={{ background:'rgba(255,69,0,0.08)', border:'1px solid rgba(255,69,0,0.25)', borderRadius:99, padding:'6px 14px', display:'flex', alignItems:'center', gap:6 }}>
           <span style={{ fontSize:14 }}>🪙</span>
-          <span style={{ 'Cinzel',serif", fontWeight:900, fontSize:15, color:'#FFD700' }}>{coins.toLocaleString()}</span>
+          <span style={{ fontFamily:"'Cinzel', serif", fontWeight:900, fontSize:15, color:'#FFD700' }}>{coins.toLocaleString()}</span>
         </div>
       </div>
 
@@ -287,7 +277,7 @@ const ShopPage = () => {
             style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:99, border:'none', flexShrink:0,
               background: cat===c.id ? 'linear-gradient(135deg,#FF4500,#FF8C00)' : 'rgba(255,69,0,0.06)',
               color: cat===c.id ? '#fff' : '#6A4030',
-              'Quicksand',sans-serif", fontWeight:800, fontSize:13, cursor:'pointer',
+              fontFamily:"'Quicksand', sans-serif", fontWeight:800, fontSize:13, cursor:'pointer',
               boxShadow: cat===c.id ? '0 4px 16px rgba(255,69,0,0.35)' : 'none',
               transition:'all 0.2s' }}>
             <span style={{fontSize:14}}>{c.icon}</span>{c.label}
