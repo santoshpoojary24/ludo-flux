@@ -15,7 +15,6 @@ import ToastContainer from './components/ui/ToastContainer';
 import SettingsPanel from './components/ui/SettingsPanel';
 import { useSocket } from './hooks/useSocket';
 import { SOCKET_EVENTS } from './shared/socketEvents.js';
-import { AnimatedBackground } from './components/cosmetics/AnimatedBackgrounds';
 
 /* ── Smooth page transition wrapper ─────────────────────────────── */
 const PageWrapper = ({ children }) => (
@@ -31,7 +30,7 @@ const PageWrapper = ({ children }) => (
 );
 
 function App() {
-  const { token, user, roomCode, logout, setRoomCode, updateUserProfile, toggleSettings, isSettingsOpen, settings, updateSettings, cosmetics } = useGameStore();
+  const { token, user, roomCode, logout, setRoomCode, updateUserProfile, toggleSettings, isSettingsOpen, settings, updateSettings } = useGameStore();
 
   // Ensure BGM is enabled on first load (in case persisted store had it disabled)
   useEffect(() => {
@@ -131,7 +130,6 @@ function App() {
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
-      <AnimatedBackground bgId={cosmetics?.backgroundId} />
       <ToastContainer />
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => useGameStore.getState().closeSettings()} />
 
