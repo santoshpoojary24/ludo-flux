@@ -1,48 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useGameStore } from '../../store/gameStore';
+import { TOKEN_SKINS } from '../../pages/CollectionPage';
 
-/* ─── Gem-tone color palette per player (jewel aesthetic) ─── */
-const COLOR_MAP = {
-  red: {
-    base: 'hsl(348, 80%, 42%)',          // Deep Ruby
-    mid: 'hsl(348, 75%, 55%)',
-    highlight: 'hsl(348, 90%, 72%)',
-    shadow: 'hsl(348, 80%, 22%)',
-    rim: 'hsl(348, 60%, 30%)',
-    glow: 'rgba(180, 30, 60, 0.7)',
-  },
-  green: {
-    base: 'hsl(152, 70%, 28%)',          // Deep Emerald
-    mid: 'hsl(152, 65%, 40%)',
-    highlight: 'hsl(152, 75%, 60%)',
-    shadow: 'hsl(152, 70%, 14%)',
-    rim: 'hsl(152, 50%, 22%)',
-    glow: 'rgba(20, 130, 70, 0.7)',
-  },
-  yellow: {
-    base: 'hsl(40, 85%, 38%)',           // Rich Gold
-    mid: 'hsl(40, 90%, 52%)',
-    highlight: 'hsl(45, 100%, 72%)',
-    shadow: 'hsl(36, 85%, 22%)',
-    rim: 'hsl(36, 65%, 28%)',
-    glow: 'rgba(200, 150, 20, 0.7)',
-  },
-  blue: {
-    base: 'hsl(220, 85%, 32%)',          // Royal Sapphire
-    mid: 'hsl(220, 80%, 48%)',
-    highlight: 'hsl(220, 90%, 70%)',
-    shadow: 'hsl(220, 85%, 18%)',
-    rim: 'hsl(220, 60%, 26%)',
-    glow: 'rgba(20, 60, 180, 0.7)',
-  },
+/* ─── Jewel base colors (always used as base hue per player) ─── */
+const PLAYER_HUES = {
+  red:    { h: 348, s: 80 },
+  green:  { h: 152, s: 70 },
+  yellow: { h: 40,  s: 85 },
+  blue:   { h: 220, s: 85 },
 };
 
-/**
- * Premium 3D Jewel-tone Token Component
- * - Layered radial gradients for a gem-cut 3D appearance
- * - Idle bobbing animation via CSS class (prefers-reduced-motion safe)
- * - Pulsing glow ring when clickable
- */
+/* ─── Build theme from player color + skin overlay ───────────── */
+const buildTheme = (color, skinId) => {
+  const { h, s } = PLAYER_HUES[color] || PLAYER_HUES.red;
+  const skin = TOKEN_SKINS[skinId] || TOKEN_SKINS.jewel;
+
+  // Skin-specific color override (use skin's color slot for this player)
+  const playerIndex = ['red','green','yellow','blue'].indexOf(color);
+  const skinColor = skin.colors[playerIndex] || skin.colors[0];
+
+  if (skinId === 'jewel') {
+    // Original jewel gem look
+    return {
+      base:      `hsl(${h}, ${s}%, 42%)`,
+      mid:       `hsl(${h}, ${s - 5}%, 55%)`,
+      highlight: `hsl(${h}, ${s + 10}%, 72%)`,
+      shadow:    `hsl(${h}, ${s}%, 22%)`,
+      rim:       `hsl(${h}, ${s - 20}%, 30%)`,
+      glow:      `hsla(${h}, ${s}%, 40%, 0.7)`,
+    };
+  }
+
+  // Other skins use their defined hex colors
+  return {
+    base:      skinColor,
+    mid:       skinColor + 'cc',
+    highlight: skinColor + '88',
+    shadow:    skinColor + '44',
+    rim:       skinColor + '66',
+    glow:      skinColor + 'bb',
+  };
+};
+
+/* ─── Skin-specific shape/style overlays ─────────────────────── */
+const getSkinStyle = (skinId) => {
+  switch (skinId) {
+    case 'crystal':
+      return { borderRadius: '50%', filter: 'brightness(1.15) saturate(1.3)' };
+    case 'fire':
+      return { borderRadius: '50% 50% 40% 40% / 55% 55% 45% 45%', filter: 'brightness(1.1)' };
+    case 'metal':
+      return { borderRadius: '30%', filter: 'brightness(1.05) contrast(1.1)' };
+    case 'knight':
+      return { borderRadius: '50%', filter: 'sepia(0.3) brightness(0.9)' };
+    case 'emoji':
+      return { borderRadius: '50%', filter: 'brightness(1.2) saturate(1.4)' };
+    default:
+      return { borderRadius: '50%' };
+  }
+};
+
+/* ─── Emoji skin special centre icon ─────────────────────────── */
+const EMOJI_ICONS = { red: '😤', green: '😎', yellow: '😄', blue: '😮' };
+
 const Token = ({
   color = 'red',
   onClick,
@@ -50,19 +71,18 @@ const Token = ({
   boardRotation = 0,
   size = 26,
 }) => {
-  const theme = COLOR_MAP[color] || COLOR_MAP.red;
+  const cosmetics = useGameStore((s) => s.cosmetics);
+  const skinId    = cosmetics?.tokenSkin || 'jewel';
+  const theme     = buildTheme(color, skinId);
+  const skinStyle = getSkinStyle(skinId);
   const tokenSize = typeof size === 'number' ? `${size}px` : size;
 
-  /* Hover lift + glow when clickable */
   const hoverVariant = {
-    scale: 1.22,
-    y: -5,
+    scale: 1.22, y: -5,
     filter: `drop-shadow(0 0 10px ${theme.glow}) drop-shadow(0 6px 12px rgba(0,0,0,0.5))`,
   };
-
   const tapVariant = {
-    scale: 0.88,
-    y: 0,
+    scale: 0.88, y: 0,
     filter: `drop-shadow(0 1px 3px rgba(0,0,0,0.4))`,
   };
 
@@ -72,103 +92,77 @@ const Token = ({
       whileHover={clickable ? hoverVariant : {}}
       whileTap={clickable ? tapVariant : {}}
       initial={{ scale: 0, opacity: 0 }}
-      animate={{
-        scale: 1,
-        opacity: 1,
-        rotate: -boardRotation,
-      }}
+      animate={{ scale: 1, opacity: 1, rotate: -boardRotation }}
       transition={{
-        type: 'spring',
-        stiffness: 380,
-        damping: 22,
+        type: 'spring', stiffness: 380, damping: 22,
         rotate: { duration: 0.35, ease: 'easeOut' },
       }}
-      /* Token bobbing: CSS class with @keyframes tokenBob defined in index.css */
       className={!clickable ? 'token-idle' : ''}
       style={{
-        width: tokenSize,
-        height: tokenSize,
+        width: tokenSize, height: tokenSize,
         position: 'relative',
         cursor: clickable ? 'pointer' : 'default',
         zIndex: clickable ? 10 : 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         transformOrigin: 'center',
-        /* Respect prefers-reduced-motion */
-        animationPlayState: 'running',
       }}
     >
-      {/* ── Outer rim (darkest layer — gives depth) ───────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '50%',
-          background: `radial-gradient(circle at 40% 38%,
-            ${theme.highlight} 0%,
-            ${theme.mid} 35%,
-            ${theme.base} 60%,
-            ${theme.shadow} 85%,
-            ${theme.rim} 100%)`,
-          boxShadow: `
-            inset 3px 3px 6px rgba(255,255,255,0.35),
-            inset -3px -3px 6px rgba(0,0,0,0.5),
-            0 6px 16px rgba(0,0,0,0.45),
-            0 2px 4px rgba(0,0,0,0.3)
-          `,
-          border: `1.5px solid ${theme.rim}`,
-        }}
-      />
+      {/* ── Main body ─────────────────────────────────────────────── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        borderRadius: skinStyle.borderRadius,
+        filter: skinStyle.filter || 'none',
+        background: `radial-gradient(circle at 40% 38%,
+          ${theme.highlight} 0%,
+          ${theme.mid} 35%,
+          ${theme.base} 60%,
+          ${theme.shadow} 85%,
+          ${theme.rim} 100%)`,
+        boxShadow: `
+          inset 3px 3px 6px rgba(255,255,255,0.35),
+          inset -3px -3px 6px rgba(0,0,0,0.5),
+          0 6px 16px rgba(0,0,0,0.45),
+          0 2px 4px rgba(0,0,0,0.3)
+        `,
+        border: `1.5px solid ${theme.rim}`,
+      }} />
 
-      {/* ── Inner specular highlight (top-left gem sparkle) ───────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '12%',
-          left: '14%',
-          width: '32%',
-          height: '28%',
-          borderRadius: '50%',
-          background: `radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)`,
-          transform: 'rotate(-20deg)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* ── Specular highlight ─────────────────────────────────────── */}
+      <div style={{
+        position: 'absolute', top: '12%', left: '14%',
+        width: '32%', height: '28%', borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)',
+        transform: 'rotate(-20deg)', pointerEvents: 'none',
+      }} />
 
-      {/* ── Centre gem facet dot ───────────────────────────────────── */}
-      <div
-        style={{
-          width: '30%',
-          height: '30%',
-          borderRadius: '50%',
+      {/* ── Centre detail (gem facet / emoji / symbol) ─────────────── */}
+      {skinId === 'emoji' ? (
+        <div style={{
+          position: 'relative', zIndex: 1,
+          fontSize: `calc(${tokenSize} * 0.42)`,
+          lineHeight: 1, userSelect: 'none',
+        }}>
+          {EMOJI_ICONS[color] || '😊'}
+        </div>
+      ) : (
+        <div style={{
+          width: '30%', height: '30%', borderRadius: skinStyle.borderRadius === '30%' ? '20%' : '50%',
           background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), ${theme.shadow}88)`,
-          boxShadow: `inset 1px 1px 2px rgba(0,0,0,0.4)`,
-          border: `1px solid rgba(255,255,255,0.12)`,
-          position: 'relative',
-          zIndex: 1,
-        }}
-      />
+          boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          position: 'relative', zIndex: 1,
+        }} />
+      )}
 
-      {/* ── Clickable pulsing glow ring (framer-motion) ───────────── */}
+      {/* ── Clickable pulsing glow ring ────────────────────────────── */}
       {clickable && (
         <motion.div
-          animate={{
-            scale: [1, 1.4, 1],
-            opacity: [0.4, 0.75, 0.4],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0.75, 0.4] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
           style={{
-            position: 'absolute',
-            inset: -5,
-            borderRadius: '50%',
+            position: 'absolute', inset: -5, borderRadius: '50%',
             background: `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)`,
-            zIndex: -1,
-            pointerEvents: 'none',
+            zIndex: -1, pointerEvents: 'none',
           }}
         />
       )}

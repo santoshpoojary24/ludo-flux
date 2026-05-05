@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import Token from './Token';
+import { BOARD_SKINS } from '../../pages/CollectionPage';
+
 
 /* ── Board constants ────────────────────────────────────────────────────────── */
 const COLORS = ['red', 'green', 'yellow', 'blue'];
@@ -52,10 +54,13 @@ const getCoord = (color, pos) => {
 
 /* ── Main Board ─────────────────────────────────────────────────────────────── */
 const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
-  const { gameState, user, settings } = useGameStore();
+  const { gameState, user, settings, cosmetics } = useGameStore();
+  const boardSkinId = cosmetics?.boardSkin || 'walnut';
+  const boardSkin   = BOARD_SKINS[boardSkinId] || BOARD_SKINS.walnut;
   const [captureFlash, setCaptureFlash] = useState(null);
   const [visualTokens, setVisualTokens] = useState(null);
   const prevTokens = useRef(null);
+
 
   /* ── Step-by-step token movement animation ─────────────────────────────────  */
   useEffect(() => {
@@ -207,11 +212,9 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         width: 'clamp(300px, 94vw, 490px)',
         height: 'clamp(300px, 94vw, 490px)',
         position: 'relative',
-        /* Dark wood-grain / parchment board background */
-        background: 'linear-gradient(145deg, #2C1A0E 0%, #1F1208 40%, #2C1A0E 100%)',
+        background: boardSkin.bg,
         borderRadius: 22,
         overflow: 'hidden',
-        /* Multi-layer premium shadow */
         boxShadow: `
           0 0 0 3px rgba(255,215,0,0.25),
           0 0 0 6px rgba(0,0,0,0.5),
@@ -224,7 +227,7 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         flexShrink: 0,
         transform: `rotate(${boardRotation}deg)`,
         transformOrigin: 'center',
-        transition: 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+        transition: 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.6s ease',
       }}
     >
       {/* ── Subtle wood grain texture overlay ──────────────────────────────── */}
