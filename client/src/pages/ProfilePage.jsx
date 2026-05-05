@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Grid } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Grid, UserPlus, Check } from 'lucide-react';
 
 import { useGameStore } from '../store/gameStore';
 
@@ -64,6 +64,7 @@ const ProfilePage = () => {
   const [matches, setMatches] = useState([]);
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [friendRequestSent, setFriendRequestSent] = useState(false);
 
   // Modals / Edit states
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
@@ -148,6 +149,26 @@ const ProfilePage = () => {
       setEditingUsername(false);
       fetchProfile();
     } catch { setUsernameError('Network error — try again'); }
+  };
+
+  const handleAddFriend = async () => {
+    if (!profile || !profile.uid) return;
+    try {
+      const res = await fetch(`${API_URL}/api/friends/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ friendUid: profile.uid })
+      });
+      if (res.ok) {
+        setFriendRequestSent(true);
+        addToast(`Friend request sent to ${profile.username}!`, 'success');
+      } else {
+        const data = await res.json();
+        addToast(data.error || 'Failed to send friend request', 'error');
+      }
+    } catch {
+      addToast('Network error while adding friend', 'error');
+    }
   };
 
   /* ── Loading ──────────────────────────────────────────────────── */
@@ -266,12 +287,20 @@ const ProfilePage = () => {
             <div style={{ flex: 1, paddingBottom: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <h1 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: 20, fontWeight: 900, color: '#FFF5E1' }}>{profile.username}</h1>
-                {isOwnProfile && (
+                {isOwnProfile ? (
                   <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                     onClick={() => { setNewUsername(profile.username); setEditingUsername(true); }}
                     style={{ background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', color: '#FFD700', display: 'flex' }}
                   >
                     <Edit3 size={12} />
+                  </motion.button>
+                ) : (
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={handleAddFriend}
+                    disabled={friendRequestSent}
+                    style={{ background: friendRequestSent ? 'rgba(74,222,128,0.2)' : 'linear-gradient(135deg,#B8860B,#FFD700)', border: friendRequestSent ? '1px solid rgba(74,222,128,0.4)' : 'none', borderRadius: 12, padding: '6px 12px', cursor: friendRequestSent ? 'default' : 'pointer', color: friendRequestSent ? '#4ade80' : '#1A120B', fontWeight: 800, fontSize: 11, fontFamily: "'Quicksand', sans-serif", display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}
+                  >
+                    {friendRequestSent ? <><Check size={14} /> Sent</> : <><UserPlus size={14} /> Add Friend</>}
                   </motion.button>
                 )}
               </div>
