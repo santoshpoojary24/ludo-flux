@@ -146,9 +146,10 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
   }, [gameState?.diceValue]);
   const diceValue = activeDiceValue;
 
-  /* Board rotates each turn — active player's home is always at the bottom */
-  const ROTATION_MAP = { blue: 0, red: 90, green: 180, yellow: 270 };
-  const boardRotation = turnColor ? (ROTATION_MAP[turnColor] ?? 0) : 0;
+  /* Board rotates so MY home quadrant is always at the bottom */
+  const ROTATION_MAP = { blue: 0, red: -90, green: -180, yellow: -270 };
+  const boardRotation = myColor ? (ROTATION_MAP[myColor] ?? 0) : 0;
+
 
 
   /* Auto-move when only one token is movable */
