@@ -132,7 +132,7 @@ function App() {
   }
 
   return (
-    <div className="w-full min-h-screen t-bg relative">
+    <div style={{ width: '100%', minHeight: '100vh', background: 'var(--bg)', position: 'relative' }}>
       <ToastContainer />
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => useGameStore.getState().closeSettings()} />
       <ThemeSelector />
@@ -141,14 +141,14 @@ function App() {
         <div style={{ position: 'fixed', top: 12, right: 12, display: 'flex', gap: 8, zIndex: 100 }}>
           <button
             onClick={() => useGameStore.getState().toggleTheme()}
-            className="w-10 h-10 rounded-full flex justify-center items-center shadow-clay text-lg bg-clay-surface border-none cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-out)', color: 'var(--text)', transition: 'transform 0.15s' }}
             aria-label="Theme"
           >
             <Palette size={20} />
           </button>
           <button
             onClick={() => useGameStore.getState().toggleSettings()}
-            className="w-10 h-10 rounded-full flex justify-center items-center shadow-clay text-lg bg-clay-surface border-none cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-out)', color: 'var(--text)', transition: 'transform 0.15s' }}
             aria-label="Settings"
           >
             <Settings size={20} />
@@ -161,16 +161,16 @@ function App() {
       ) : roomCode ? (
         <GamePage />
       ) : (
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
-          <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
-          <Route path="/player/:uid" element={<PageWrapper><ProfilePage /></PageWrapper>} />
-          <Route path="/shop" element={<PageWrapper><ShopPage /></PageWrapper>} />
-          <Route path="/rewards" element={<PageWrapper><RewardsPage /></PageWrapper>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AnimatePresence>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
+            <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+            <Route path="/player/:uid" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+            <Route path="/shop" element={<PageWrapper><ShopPage /></PageWrapper>} />
+            <Route path="/rewards" element={<PageWrapper><RewardsPage /></PageWrapper>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
       )}
     </div>
   );
