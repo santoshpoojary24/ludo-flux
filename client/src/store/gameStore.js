@@ -19,7 +19,7 @@ export const useGameStore = create(
       // Settings
       settings: {
         masterVolume: 80,
-        bgMusicEnabled: false,
+        bgMusicEnabled: true,
         sfxEnabled: true,
         autoRollDice: false,
         confirmMove: false,

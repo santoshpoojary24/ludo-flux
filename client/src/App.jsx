@@ -30,8 +30,15 @@ const PageWrapper = ({ children }) => (
 );
 
 function App() {
-  const { token, user, roomCode, logout, setRoomCode, updateUserProfile, toggleSettings, isSettingsOpen } = useGameStore();
-  const settings = useGameStore((state) => state.settings);
+  const { token, user, roomCode, logout, setRoomCode, updateUserProfile, toggleSettings, isSettingsOpen, settings, updateSettings } = useGameStore();
+
+  // Ensure BGM is enabled on first load (in case persisted store had it disabled)
+  useEffect(() => {
+    if (!settings.bgMusicEnabled) {
+      updateSettings({ bgMusicEnabled: true });
+    }
+  }, []);
+
   const { socket } = useSocket();
   const location = useLocation();
   const [authChecked, setAuthChecked] = useState(false);

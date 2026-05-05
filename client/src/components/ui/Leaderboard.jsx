@@ -20,13 +20,28 @@ const getRank = (elo = 0) =>
 const Leaderboard = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [playerBanners, setPlayerBanners] = useState({}); // uid -> bannerId
   const navigate = useNavigate();
 
+  // Load leaderboard and then fetch each player's banner (if any)
   useEffect(() => {
     fetch(`${API_URL}/api/leaderboard?t=${Date.now()}`)
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         setPlayers(data);
+        // Parallel fetch of each player's profile summary to get bannerId
+        const bannerPromises = data.map(p =>
+          fetch(`${API_URL}/api/profile/${p.uid}/summary`)
+            .then(r => r.json())
+            .then(summary => ({ uid: p.uid, bannerId: summary.cosmetics?.bannerId }))
+            .catch(() => ({ uid: p.uid, bannerId: null }))
+        );
+        const bannerResults = await Promise.all(bannerPromises);
+        const bannerMap = {};
+        bannerResults.forEach(({ uid, bannerId }) => {
+          if (bannerId) bannerMap[uid] = bannerId;
+        });
+        setPlayerBanners(bannerMap);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -68,8 +83,17 @@ const Leaderboard = () => {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 16, filter: `drop-shadow(0 0 6px ${rank.color}44)` }}>{rank.icon}</span>
-                  <div style={{ fontWeight: 900, fontSize: 15, color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif" }}>{player.username}</div>
-                  {idx === 0 && <Medal color="#FFD700" size={14} style={{ marginLeft: 4 }} />}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    {playerBanners[player.uid] && (
+                      <img
+                        src={`/banners/${playerBanners[player.uid]}.png`}
+                        alt="Banner"
+                        style={{ width: '100%', maxHeight: 40, objectFit: 'cover', borderRadius: 6, marginBottom: 4 }}
+                      />
+                    )}
+                    <div style={{ fontWeight: 900, fontSize: 15, color: '#FFF5E1', fontFamily: "'Quicksand', sans-serif" }}>{player.username}</div>
+                    {idx === 0 && <Medal color="#FFD700" size={14} style={{ marginLeft: 4 }} />}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                   <div style={{ fontSize: 11, color: rank.color, fontWeight: 800, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>{rank.name}</div>
