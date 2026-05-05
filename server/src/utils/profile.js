@@ -282,7 +282,7 @@ const formatPlayTime = (seconds = 0) => {
   return `${hours}h ${minutes}m`;
 };
 
-const calculateBadgeProgressValue = async (db, user, stats, definition) => {
+const calculateBadgeProgressValue = (user, stats, definition, spinCount) => {
   switch (definition.condition_type) {
     case 'matches_played':
       return stats.totalMatchesPlayed;
@@ -292,15 +292,8 @@ const calculateBadgeProgressValue = async (db, user, stats, definition) => {
       return stats.bestWinStreak;
     case 'elo':
       return user.elo || 0;
-    case 'spin_count': {
-      const row = await db.get(
-        `SELECT COUNT(*) AS spin_count
-         FROM activity_feed
-         WHERE user_uid = ? AND event_type = 'spin'`,
-        [user.uid]
-      );
-      return row?.spin_count || 0;
-    }
+    case 'spin_count':
+      return spinCount;
     default:
       return 0;
   }
@@ -312,31 +305,36 @@ const syncUserBadges = async (db, user, stats) => {
   const byKey = new Map(existingRows.map((row) => [row.badge_key, row]));
   const newlyEarned = [];
 
-  for (const definition of definitions) {
-    const progress = await calculateBadgeProgressValue(db, user, stats, definition);
+  // Fetch spin count ONCE outside the loop to avoid N queries
+  let spinCount = 0;
+  if (definitions.some(d => d.condition_type === 'spin_count')) {
+    const row = await db.get(
+      `SELECT COUNT(*) AS spin_count FROM activity_feed WHERE user_uid = ? AND event_type = 'spin'`,
+      [user.uid]
+    );
+    spinCount = row?.spin_count || 0;
+  }
+
+  const promises = definitions.map(async (definition) => {
+    const progress = calculateBadgeProgressValue(user, stats, definition, spinCount);
     const earned = progress >= definition.condition_value;
     
-    // Ensure row exists
-    await db.run(
-      `INSERT INTO user_badges (user_uid, badge_key, progress, is_pinned)
-       VALUES (?, ?, 0, 0) ON CONFLICT DO NOTHING`,
-      [user.uid, definition.badge_key]
-    );
-
-    const current = await db.get(
-      'SELECT * FROM user_badges WHERE user_uid = ? AND badge_key = ?',
-      [user.uid, definition.badge_key]
-    );
-
-    const wasEarned = Boolean(current.earned_at);
+    const current = byKey.get(definition.badge_key);
+    const wasEarned = current && Boolean(current.earned_at);
     const newlyEarnedAt = wasEarned ? current.earned_at : (earned ? new Date().toISOString() : null);
 
-    await db.run(
-      `UPDATE user_badges
-       SET progress = ?, earned_at = ?
-       WHERE id = ?`,
-      [progress, newlyEarnedAt, current.id]
-    );
+    if (!current) {
+      await db.run(
+        `INSERT INTO user_badges (user_uid, badge_key, progress, is_pinned, earned_at)
+         VALUES (?, ?, ?, 0, ?) ON CONFLICT DO NOTHING`,
+        [user.uid, definition.badge_key, progress, newlyEarnedAt]
+      );
+    } else if (current.progress !== progress || current.earned_at !== newlyEarnedAt) {
+      await db.run(
+        `UPDATE user_badges SET progress = ?, earned_at = ? WHERE id = ?`,
+        [progress, newlyEarnedAt, current.id]
+      );
+    }
 
     if (!wasEarned && earned) {
       await db.run(
@@ -345,8 +343,9 @@ const syncUserBadges = async (db, user, stats) => {
       );
       newlyEarned.push(definition);
     }
-  }
+  });
 
+  await Promise.all(promises);
   return newlyEarned;
 };
 

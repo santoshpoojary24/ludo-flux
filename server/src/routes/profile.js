@@ -239,7 +239,6 @@ profileRouter.get('/:uid/stats', optionalAuthMiddleware, async (req, res) => {
 
   const matches = await fetchUserMatchSnapshots(db, profileUser.uid);
   const stats = computeCareerStats(matches);
-  await awardNewBadges(req, profileUser, stats);
 
   const friendsAverage = viewerContext.isSelf
     ? await getFriendsAverageStats(db, profileUser.uid)
@@ -334,7 +333,6 @@ profileRouter.get('/:uid/achievements', optionalAuthMiddleware, async (req, res)
   const { db, profileUser } = context;
   const matches = await fetchUserMatchSnapshots(db, profileUser.uid);
   const stats = computeCareerStats(matches);
-  await awardNewBadges(req, profileUser, stats);
 
   const definitions = await db.all('SELECT * FROM badge_definitions ORDER BY name ASC');
   const badges = await db.all(
