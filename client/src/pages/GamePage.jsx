@@ -13,6 +13,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import {
   ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings
 } from 'lucide-react';
+import { useAnimeEffects, WinFireworks, FlameAura, ImpactText } from '../components/cosmetics/AnimeEffects';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -44,6 +45,7 @@ const GamePage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const prevStatusRef = useRef(gameState?.status);
+  const { trigger: triggerEffect, EffectsLayer } = useAnimeEffects();
 
   // Critical: use refs to avoid stale closures in effects
   const roomCodeRef  = useRef(storeRoomCode);
@@ -96,8 +98,16 @@ const GamePage = () => {
     };
 
     const onDiceRolled = (state) => {
-      setIsRollingAnim(false); // Instantly stop anticipating and let Dice.jsx play the physical roll
+      setIsRollingAnim(false);
       setGameState(state);
+      // Anime dice effect
+      if (state?.diceValue != null) {
+        triggerEffect('diceroll', { value: state.diceValue });
+      }
+    };
+
+    const onTokenCaptured = () => {
+      triggerEffect('capture', { attackerColor: '#FF4500' });
     };
 
     const onPlayerJoined = ({ msg }) => addToast(msg || 'A player joined', 'success');
@@ -108,6 +118,7 @@ const GamePage = () => {
     socket.on(SOCKET_EVENTS.GAME_DICE_ROLLED,   onDiceRolled);
     socket.on(SOCKET_EVENTS.PLAYER_JOINED,      onPlayerJoined);
     socket.on(SOCKET_EVENTS.PLAYER_LEFT,        onPlayerLeft);
+    socket.on('token_captured',                 onTokenCaptured);
 
     return () => {
       strictModeLeaveTimeout = setTimeout(() => {
@@ -122,6 +133,7 @@ const GamePage = () => {
       socket.off(SOCKET_EVENTS.GAME_DICE_ROLLED,   onDiceRolled);
       socket.off(SOCKET_EVENTS.PLAYER_JOINED,      onPlayerJoined);
       socket.off(SOCKET_EVENTS.PLAYER_LEFT,        onPlayerLeft);
+      socket.off('token_captured',                 onTokenCaptured);
     };
   }, [socket, storeRoomCode]); // ← NO user/setters in deps to prevent re-join loop
 
@@ -293,6 +305,10 @@ const GamePage = () => {
 
   return (
     <div style={styles.page}>
+      {/* Anime effects layer — always on top */}
+      <EffectsLayer />
+
+      {gameState.status === 'playing' && gameState.winner && <WinFireworks color={`var(--token-${gameState.winner})`} />}
       {gameState.status === 'playing' && <Scoreboard startTime={startTimeRef.current} />}
 
       <AnimatePresence>
@@ -305,20 +321,20 @@ const GamePage = () => {
             style={{
               position: 'fixed', inset: 0, zIndex: 1000,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', pointerEvents: 'none'
+              background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)', pointerEvents: 'none'
             }}
           >
             <div style={{
               fontSize: 'clamp(36px, 9vw, 72px)',
-              fontFamily: "'Cinzel', serif",
+              fontFamily: "'Orbitron','Cinzel', sans-serif",
               fontWeight: 900,
               color: '#FFD700',
-              textShadow: '0 0 60px rgba(255,215,0,0.8), 0 0 120px rgba(255,215,0,0.4), 0 8px 20px rgba(0,0,0,0.8)',
+              WebkitTextStroke: '3px #FF4500',
+              textShadow: '0 0 40px rgba(255,69,0,1), 0 0 80px rgba(255,215,0,0.6)',
               textTransform: 'uppercase',
               letterSpacing: 8,
-            }}>
-              Game Start!
-            </div>
+              animation: 'animeEmergeFlame .6s cubic-bezier(0.34,1.56,0.64,1) forwards',
+            }}>FIGHT!!</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -544,13 +560,15 @@ const GamePage = () => {
                     <Trophy size={56} style={{ color: `var(--token-${gameState.winner})`, marginBottom: 8, filter: `drop-shadow(0 0 12px var(--token-${gameState.winner}))` }} />
                   </motion.div>
                   <div style={{
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Orbitron','Cinzel', sans-serif",
                     fontWeight: 900, fontSize: 28, letterSpacing: 3,
                     textTransform: 'uppercase',
                     color: `var(--token-${gameState.winner})`,
-                    textShadow: `0 0 20px var(--token-${gameState.winner})88`,
+                    WebkitTextStroke: '2px #000',
+                    textShadow: `0 0 20px var(--token-${gameState.winner})88, 0 0 40px var(--token-${gameState.winner})44`,
+                    animation: 'animeTextSlam .5s cubic-bezier(0.34,1.56,0.64,1) forwards',
                   }}>
-                    {gameState.winner} Wins!
+                    {gameState.winner} WINS!
                   </div>
                   <div style={{
                     fontSize: 13, color: 'var(--text-muted)',
