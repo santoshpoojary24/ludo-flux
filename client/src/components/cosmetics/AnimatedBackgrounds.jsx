@@ -23,7 +23,7 @@ const injectBG = () => {
 };
 
 const BG = ({ children, base={} }) => { injectBG(); return (
-  <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none', overflow:'hidden', ...base }}>
+  <div style={{ position:'fixed', inset:0, zIndex:-1, pointerEvents:'none', overflow:'hidden', ...base }}>
     {children}
   </div>
 );};
@@ -139,7 +139,7 @@ export const LavaDimBackground = () => {
       observer.disconnect();
     };
   }, []);
-  return <div ref={containerRef} style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none'}}><canvas ref={canvasRef} style={{width:'100%',height:'100%'}}/></div>;
+  return <div ref={containerRef} style={{position:'fixed',inset:0,zIndex:-1,pointerEvents:'none'}}><canvas ref={canvasRef} style={{width:'100%',height:'100%'}}/></div>;
 };
 
 /* 8. Spirit Realm */

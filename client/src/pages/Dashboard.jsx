@@ -141,7 +141,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%', maxWidth: 440, margin: '0 auto', paddingBottom: 88 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%', maxWidth: 440, margin: '0 auto', paddingBottom: 88, position: 'relative', zIndex: 1 }}>
       <div
         style={{
           padding: '20px 20px 16px',
@@ -149,6 +149,7 @@ const Dashboard = () => {
           boxShadow: 'var(--shadow-out)',
           borderBottomLeftRadius: 28,
           borderBottomRightRadius: 28,
+          position: 'relative',
           zIndex: 10
         }}
       >
