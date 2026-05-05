@@ -31,11 +31,12 @@ import ChallengeNotification from '../components/dashboard/ChallengeNotification
 import Leaderboard from '../components/ui/Leaderboard';
 import LocalGameSetup from '../components/ui/LocalGameSetup';
 import QRScannerModal from '../components/dashboard/QRScannerModal';
+import { AnimatedAvatarFrame } from '../components/cosmetics/AnimatedAvatarFrames';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const Dashboard = () => {
-  const { user, setRoomCode, updateUserCoins, addToast } = useGameStore();
+  const { user, setRoomCode, updateUserCoins, addToast, cosmetics } = useGameStore();
   const [joinCode, setJoinCode] = useState('');
   const [activeTab, setActiveTab] = useState('home');
   const [showSpinWheel, setShowSpinWheel] = useState(false);
@@ -164,27 +165,33 @@ const Dashboard = () => {
             cursor: 'pointer'
           }}
         >
-          <div
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: '50%',
-              background: user?.avatarConfig?.bgColor
-                ? `${user.avatarConfig.bgColor}33`
-                : 'linear-gradient(135deg, var(--token-blue), var(--accent))',
-              border: user?.avatarConfig?.bgColor
-                ? `3px solid ${user.avatarConfig.bgColor}`
-                : '3px solid var(--surface2)',
-              display: 'grid',
-              placeItems: 'center',
-              fontWeight: 900,
-              fontSize: user?.avatarConfig?.icon ? 26 : 22,
-              color: user?.avatarConfig?.bgColor || '#fff',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-            }}
-          >
-            {user?.avatarConfig?.icon || user?.username?.[0]?.toUpperCase() || '?'}
-          </div>
+          {cosmetics?.avatarFrameId ? (
+            <div style={{ position:'relative', width: 52, height: 52, marginRight: 6 }}>
+              <AnimatedAvatarFrame frameId={cosmetics.avatarFrameId} size={52} />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: '50%',
+                background: user?.avatarConfig?.bgColor
+                  ? `${user.avatarConfig.bgColor}33`
+                  : 'linear-gradient(135deg, var(--token-blue), var(--accent))',
+                border: user?.avatarConfig?.bgColor
+                  ? `3px solid ${user.avatarConfig.bgColor}`
+                  : '3px solid var(--surface2)',
+                display: 'grid',
+                placeItems: 'center',
+                fontWeight: 900,
+                fontSize: user?.avatarConfig?.icon ? 26 : 22,
+                color: user?.avatarConfig?.bgColor || '#fff',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+            >
+              {user?.avatarConfig?.icon || user?.username?.[0]?.toUpperCase() || '?'}
+            </div>
+          )}
           <div>
             <div style={{ fontWeight: 900, color: 'var(--text)', fontSize: 17, lineHeight: 1.2 }}>
               {user?.username || 'Guest'}

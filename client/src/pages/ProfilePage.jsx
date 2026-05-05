@@ -6,6 +6,8 @@ import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, 
 import { useGameStore } from '../store/gameStore';
 
 import AvatarSelector from '../components/ui/AvatarSelector';
+import { AnimatedBanner } from '../components/cosmetics/AnimatedBanners';
+import { AnimatedAvatarFrame } from '../components/cosmetics/AnimatedAvatarFrames';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -54,7 +56,7 @@ const StatCard = ({ value, label, color, delay = 0 }) => (
 const ProfilePage = () => {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, token, addToast, updateUserProfile, toggleSettings } = useGameStore();
+  const { user: currentUser, token, addToast, updateUserProfile, toggleSettings, cosmetics } = useGameStore();
 
   const targetUid = uid || currentUser?.uid;
   const isOwnProfile = !uid || uid === currentUser?.uid;
@@ -173,14 +175,14 @@ const ProfilePage = () => {
 
   /* ── Loading ──────────────────────────────────────────────────── */
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg,#1A120B,#0D0805)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: cosmetics?.backgroundId ? 'transparent' : 'linear-gradient(160deg,#1A120B,#0D0805)' }}>
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }} style={{ fontSize: 48 }}>🎲</motion.div>
       <p style={{ fontFamily: "'Cinzel', serif", color: '#FFD700', letterSpacing: 4, marginTop: 16, fontSize: 13 }}>LOADING PROFILE</p>
     </div>
   );
 
   if (!profile) return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#1A120B,#0D0805)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+    <div style={{ minHeight: '100vh', background: cosmetics?.backgroundId ? 'transparent' : 'linear-gradient(160deg,#1A120B,#0D0805)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
       <p style={{ color: '#A08060', fontFamily: "'Quicksand', sans-serif" }}>Profile not found</p>
       <button onClick={() => navigate('/')} style={{ padding: '12px 24px', borderRadius: 14, background: 'linear-gradient(135deg,#B8860B,#FFD700)', color: '#1A120B', fontFamily: "'Cinzel', serif", fontWeight: 700, border: 'none', cursor: 'pointer' }}>Go Home</button>
     </div>
@@ -194,7 +196,7 @@ const ProfilePage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{ minHeight: '100vh', background: 'linear-gradient(160deg,#1A120B 0%,#0D0805 55%,#1A120B 100%)', paddingBottom: 80, position: 'relative', overflow: 'hidden' }}
+      style={{ minHeight: '100vh', background: cosmetics?.backgroundId ? 'transparent' : 'linear-gradient(160deg,#1A120B 0%,#0D0805 55%,#1A120B 100%)', paddingBottom: 80, position: 'relative', overflow: 'hidden' }}
     >
       {/* Ambient glow blobs */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -208,8 +210,13 @@ const ProfilePage = () => {
 
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <div style={{ position: 'relative', height: 200, background: `linear-gradient(135deg, hsl(348,65%,24%) 0%, hsl(220,70%,22%) 50%, hsl(40,70%,28%) 100%)`, overflow: 'hidden' }}>
-        {/* Shimmer overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0px, transparent 14px, rgba(255,215,0,0.03) 14px, rgba(255,215,0,0.03) 15px)' }} />
+        {(isOwnProfile && cosmetics?.bannerId) || profile?.bannerId ? (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <AnimatedBanner bannerId={(isOwnProfile ? cosmetics?.bannerId : profile?.bannerId)} />
+          </div>
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0px, transparent 14px, rgba(255,215,0,0.03) 14px, rgba(255,215,0,0.03) 15px)' }} />
+        )}
 
         {/* Back button */}
         <motion.button
@@ -265,13 +272,19 @@ const ProfilePage = () => {
           {/* Avatar + Name Row */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 18, alignItems: 'flex-end' }}>
             {/* Avatar */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <motion.div
-                whileHover={isOwnProfile ? { scale: 1.05 } : {}}
-                style={{ width: 88, height: 88, borderRadius: '50%', border: `3px solid ${rank.color}`, boxShadow: `0 0 20px ${rank.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, background: `radial-gradient(circle at 38% 38%, ${profile.avatarConfig?.bgColor || '#8B6000'}55, ${profile.avatarConfig?.bgColor || '#3C2A1E'})` }}
-              >
-                {profile.avatarConfig?.icon || profile.username?.[0]?.toUpperCase()}
-              </motion.div>
+            <div style={{ position: 'relative', flexShrink: 0, width: 88, height: 88 }}>
+              {((isOwnProfile && cosmetics?.avatarFrameId) || profile?.avatarFrameId) ? (
+                <div style={{ position: 'absolute', inset: -10 }}>
+                  <AnimatedAvatarFrame frameId={(isOwnProfile ? cosmetics?.avatarFrameId : profile?.avatarFrameId)} size={108} />
+                </div>
+              ) : (
+                <motion.div
+                  whileHover={isOwnProfile ? { scale: 1.05 } : {}}
+                  style={{ width: '100%', height: '100%', borderRadius: '50%', border: `3px solid ${rank.color}`, boxShadow: `0 0 20px ${rank.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, background: `radial-gradient(circle at 38% 38%, ${profile.avatarConfig?.bgColor || '#8B6000'}55, ${profile.avatarConfig?.bgColor || '#3C2A1E'})` }}
+                >
+                  {profile.avatarConfig?.icon || profile.username?.[0]?.toUpperCase()}
+                </motion.div>
+              )}
               {isOwnProfile && (
                 <motion.button
                   whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
