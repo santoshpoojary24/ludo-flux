@@ -14,6 +14,8 @@ const friendsRoutes = require('./routes/friends');
 const feedRoutes = require('./routes/feed');
 const leaderboardRoutes = require('./routes/leaderboard');
 const { profileRouter, accountRouter, authProfileRouter } = require('./routes/profile');
+const shopRoutes = require('./routes/shop');
+const rewardsRoutes = require('./routes/rewards');
 
 const app = express();
 
@@ -52,6 +54,8 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/profile', profileRouter);
 app.use('/api/account', accountRouter);
+app.use('/api/shop', shopRoutes);
+app.use('/api/rewards', rewardsRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {

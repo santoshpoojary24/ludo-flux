@@ -5,6 +5,8 @@ import GamePage from './pages/GamePage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
+import ShopPage from './pages/ShopPage';
+import RewardsPage from './pages/RewardsPage';
 import { useGameStore } from './store/gameStore';
 import ToastContainer from './components/ui/ToastContainer';
 import SettingsPanel from './components/ui/SettingsPanel';
@@ -148,6 +150,8 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/player/:uid" element={<ProfilePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/rewards" element={<RewardsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}
