@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award } from 'lucide-react';
+import { ArrowLeft, Edit3, Save, X, Trophy, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Layers } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
+
 import AvatarSelector from '../components/ui/AvatarSelector';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -52,7 +53,8 @@ const StatCard = ({ value, label, color, delay = 0 }) => (
 const ProfilePage = () => {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, token, addToast, updateUserProfile } = useGameStore();
+  const { user: currentUser, token, addToast, updateUserProfile, toggleSettings } = useGameStore();
+
   const targetUid = uid || currentUser?.uid;
   const isOwnProfile = !uid || uid === currentUser?.uid;
 
@@ -75,22 +77,30 @@ const ProfilePage = () => {
     setLoading(true);
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const [profileRes, statsRes, matchesRes, badgesRes] = await Promise.all([
+      // Promise.allSettled so one failing endpoint doesn't block the whole page
+      const [profileRes, statsRes, matchesRes, badgesRes] = await Promise.allSettled([
         fetch(`${API_URL}/api/profile/${targetUid}/summary`, { headers }),
         fetch(`${API_URL}/api/profile/${targetUid}/stats`, { headers }),
         fetch(`${API_URL}/api/profile/${targetUid}/matches?limit=10`, { headers }),
         fetch(`${API_URL}/api/profile/${targetUid}/achievements`, { headers }),
       ]);
-      if (profileRes.ok) setProfile(await profileRes.json());
-      if (statsRes.ok) setStats(await statsRes.json());
-      if (matchesRes.ok) setMatches((await matchesRes.json()).items || []);
-      if (badgesRes.ok) { const bd = await badgesRes.json(); setBadges(bd.items || []); }
+      if (profileRes.status === 'fulfilled' && profileRes.value.ok)
+        setProfile(await profileRes.value.json());
+      if (statsRes.status === 'fulfilled' && statsRes.value.ok)
+        setStats(await statsRes.value.json());
+      if (matchesRes.status === 'fulfilled' && matchesRes.value.ok)
+        setMatches((await matchesRes.value.json()).items || []);
+      if (badgesRes.status === 'fulfilled' && badgesRes.value.ok) {
+        const bd = await badgesRes.value.json();
+        setBadges(bd.items || []);
+      }
     } catch {
       addToast?.('Failed to load profile', 'error');
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => { fetchProfile(); }, [targetUid, token]);
 
@@ -184,11 +194,34 @@ const ProfilePage = () => {
           <ArrowLeft size={20} />
         </motion.button>
 
-        {/* Rank badge top-right — no settings button */}
-        <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: `1px solid ${rank.color}44`, borderRadius: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 18 }}>{rank.icon}</span>
-          <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 12, color: rank.color, letterSpacing: 1 }}>{rank.name}</span>
+        {/* Top-right: Rank badge + Collection + Settings */}
+        <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isOwnProfile && (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
+                onClick={() => navigate('/collection')}
+                title="Collection"
+                style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,215,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFD700' }}
+              >
+                <Layers size={16} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }}
+                onClick={toggleSettings}
+                title="Settings"
+                style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,215,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFD700' }}
+              >
+                <Settings size={16} />
+              </motion.button>
+            </>
+          )}
+          <div style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: `1px solid ${rank.color}44`, borderRadius: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 18 }}>{rank.icon}</span>
+            <span style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: 12, color: rank.color, letterSpacing: 1 }}>{rank.name}</span>
+          </div>
         </div>
+
 
         {/* Gold bottom divider */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.5), transparent)' }} />

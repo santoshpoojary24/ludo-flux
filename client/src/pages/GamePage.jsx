@@ -11,8 +11,9 @@ import Scoreboard from '../components/ui/Scoreboard';
 import FriendsList from '../components/dashboard/FriendsList';
 import { QRCodeCanvas } from 'qrcode.react';
 import {
-  ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings, Palette
+  ArrowLeft, MessageCircle, Users, Share2, RotateCw, Trophy, Mic, MicOff, Bot, Volume2, VolumeX, UserPlus, QrCode, Settings
 } from 'lucide-react';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -29,8 +30,8 @@ const GamePage = () => {
     addToast,
     settings,
     toggleSettings,
-    toggleTheme
   } = useGameStore();
+
 
   const { socket } = useSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -331,10 +332,8 @@ const GamePage = () => {
           <button onClick={toggleSettings} style={styles.iconBtn} title="Settings">
             <Settings size={18} />
           </button>
-          <button onClick={toggleTheme} style={styles.iconBtn} title="Toggle Theme">
-            <Palette size={18} />
-          </button>
         </div>
+
 
         <div style={styles.roomInfo}>
           <span style={styles.roomLabel}>ROOM</span>

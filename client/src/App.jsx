@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
 import ShopPage from './pages/ShopPage';
 import RewardsPage from './pages/RewardsPage';
+import CollectionPage from './pages/CollectionPage';
+
 import { useGameStore } from './store/gameStore';
 import ToastContainer from './components/ui/ToastContainer';
 import SettingsPanel from './components/ui/SettingsPanel';
@@ -136,7 +138,9 @@ function App() {
             <Route path="/player/:uid" element={<PageWrapper><ProfilePage /></PageWrapper>} />
             <Route path="/shop" element={<PageWrapper><ShopPage /></PageWrapper>} />
             <Route path="/rewards" element={<PageWrapper><RewardsPage /></PageWrapper>} />
+            <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
+
           </Routes>
         </AnimatePresence>
       )}
