@@ -30,9 +30,9 @@ export const useGameStore = create(
         turnTimer: 30,
         botDifficulty: 'medium',
         voiceVolume: 80,
-        theme: 'clay'
+        theme: 'premium'
       },
-      theme: 'clay',
+      theme: 'premium',
       isSettingsOpen: false,
 
       // Local game (Pass & Play)
@@ -86,7 +86,7 @@ export const useGameStore = create(
 
       toggleTheme: () => {
         const currentTheme = get().theme;
-        const themes = ['clay', 'neon', 'minimal', 'forest', 'retro'];
+        const themes = ['premium', 'clay', 'neon', 'minimal', 'forest', 'retro'];
         const currentIndex = themes.indexOf(currentTheme);
         const nextTheme = themes[(currentIndex + 1) % themes.length];
         set({ theme: nextTheme });

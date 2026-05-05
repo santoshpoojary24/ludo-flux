@@ -263,13 +263,25 @@ const GamePage = () => {
   // Loading screen
   if (!gameState) {
     return (
-      <div style={styles.loading}>
+      <div style={{ ...styles.loading, background: 'linear-gradient(160deg, #1A120B, #0D0805)' }}>
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          style={styles.spinner}
-        />
-        <p style={styles.loadingText}>Joining Room…</p>
+          animate={{ rotateY: 360 }}
+          transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
+          style={{ fontSize: 52, transformStyle: 'preserve-3d' }}
+        >
+          🎲
+        </motion.div>
+        <p style={{
+          ...styles.loadingText,
+          fontFamily: "'Cinzel', serif",
+          color: '#FFD700',
+          letterSpacing: 6,
+          marginTop: 24,
+          textShadow: '0 0 20px rgba(255,215,0,0.5)'
+        }}>
+          LUDO FLUX
+        </p>
+        <p style={{ color: '#8a7060', fontSize: 11, fontWeight: 700, letterSpacing: 2 }}>Joining Room…</p>
       </div>
     );
   }
@@ -286,20 +298,23 @@ const GamePage = () => {
         {showStartAnim && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+            animate={{ scale: [0, 1.15, 1], opacity: 1 }}
             exit={{ scale: 2, opacity: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.7 }}
             style={{
               position: 'fixed', inset: 0, zIndex: 1000,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', pointerEvents: 'none'
+              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', pointerEvents: 'none'
             }}
           >
             <div style={{
-              fontSize: 'clamp(40px, 10vw, 80px)', fontWeight: 900,
-              color: 'var(--accent)', textShadow: '0 0 40px var(--accent), 0 8px 16px rgba(0,0,0,0.5)',
-              textTransform: 'uppercase', fontStyle: 'italic',
-              WebkitTextStroke: '2px white'
+              fontSize: 'clamp(36px, 9vw, 72px)',
+              fontFamily: "'Cinzel', serif",
+              fontWeight: 900,
+              color: '#FFD700',
+              textShadow: '0 0 60px rgba(255,215,0,0.8), 0 0 120px rgba(255,215,0,0.4), 0 8px 20px rgba(0,0,0,0.8)',
+              textTransform: 'uppercase',
+              letterSpacing: 8,
             }}>
               Game Start!
             </div>
@@ -374,24 +389,30 @@ const GamePage = () => {
       {gameState.status === 'playing' && !gameState.winner && (
         <motion.div
           key={turnColor}
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
           style={{
             ...styles.turnBanner,
             borderLeft: `4px solid var(--token-${turnColor})`,
-            background: `linear-gradient(90deg, var(--token-${turnColor})18, transparent)`
+            background: `linear-gradient(90deg, var(--token-${turnColor})22, transparent)`,
+            boxShadow: `0 0 12px var(--token-${turnColor})33`,
           }}
         >
           <motion.div
-            animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ repeat: Infinity, duration: 1.2 }}
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.1 }}
             style={{
               width: 10, height: 10, borderRadius: '50%',
               background: `var(--token-${turnColor})`,
-              boxShadow: `0 0 10px var(--token-${turnColor})`
+              boxShadow: `0 0 12px var(--token-${turnColor}), 0 0 24px var(--token-${turnColor})88`
             }}
           />
-          <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--text)' }}>
+          <span style={{
+            fontWeight: 900, fontSize: 13, letterSpacing: 2,
+            textTransform: 'uppercase', color: 'var(--text)',
+            fontFamily: "'Quicksand', sans-serif"
+          }}>
             {isMyTurn
               ? '🎯 Your Turn — ' + (diceValue ? 'Pick a token' : 'Roll the dice!')
               : `${turnPlayer?.isBot ? 'Bot ' + turnColor : turnPlayer?.username || turnColor}'s Turn`}
@@ -486,20 +507,41 @@ const GamePage = () => {
             {gameState.winner ? (
               <motion.div
                 key="winner"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ scale: 0.6, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 180, damping: 18 }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}
               >
                 <div style={{
                   ...styles.winCard,
                   borderColor: `var(--token-${gameState.winner})`,
-                  boxShadow: `0 0 40px var(--token-${gameState.winner})44, var(--shadow-out)`
+                  boxShadow: `
+                    0 0 0 3px var(--token-${gameState.winner})44,
+                    0 0 60px var(--token-${gameState.winner})55,
+                    0 0 120px var(--token-${gameState.winner})22,
+                    var(--shadow-out)
+                  `
                 }}>
-                  <Trophy size={52} style={{ color: `var(--token-${gameState.winner})`, marginBottom: 8 }} />
-                  <div style={{ fontWeight: 900, fontSize: 26, color: 'var(--text)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                  <motion.div
+                    animate={{ rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.2, delay: 0.3 }}
+                  >
+                    <Trophy size={56} style={{ color: `var(--token-${gameState.winner})`, marginBottom: 8, filter: `drop-shadow(0 0 12px var(--token-${gameState.winner}))` }} />
+                  </motion.div>
+                  <div style={{
+                    fontFamily: "'Cinzel', serif",
+                    fontWeight: 900, fontSize: 28, letterSpacing: 3,
+                    textTransform: 'uppercase',
+                    color: `var(--token-${gameState.winner})`,
+                    textShadow: `0 0 20px var(--token-${gameState.winner})88`,
+                  }}>
                     {gameState.winner} Wins!
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, marginTop: 4 }}>
+                  <div style={{
+                    fontSize: 13, color: 'var(--text-muted)',
+                    fontWeight: 700, marginTop: 4,
+                    fontFamily: "'Quicksand', sans-serif"
+                  }}>
                     {gameState.players?.find(p => p.color === gameState.winner)?.username || gameState.winner}
                   </div>
                 </div>
