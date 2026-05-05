@@ -15,6 +15,20 @@ import { useSocket } from './hooks/useSocket';
 import { SOCKET_EVENTS } from './shared/socketEvents.js';
 import { Palette, Settings } from 'lucide-react';
 
+/* ── Smooth page transition wrapper ─────────────────────────────── */
+const PageWrapper = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 18 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -12 }}
+    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+    style={{ width: '100%', minHeight: '100vh' }}
+  >
+    {children}
+  </motion.div>
+);
+
+
 function App() {
   const { token, user, roomCode, logout, setRoomCode, theme, updateUserProfile, toggleSettings, isSettingsOpen } = useGameStore();
   const settings = useGameStore((state) => state.settings);
@@ -146,14 +160,16 @@ function App() {
       ) : roomCode ? (
         <GamePage />
       ) : (
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/player/:uid" element={<ProfilePage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/rewards" element={<RewardsPage />} />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageWrapper><Dashboard /></PageWrapper>} />
+          <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+          <Route path="/player/:uid" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+          <Route path="/shop" element={<PageWrapper><ShopPage /></PageWrapper>} />
+          <Route path="/rewards" element={<PageWrapper><RewardsPage /></PageWrapper>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+      </AnimatePresence>
       )}
     </div>
   );

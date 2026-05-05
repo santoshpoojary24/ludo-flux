@@ -649,3 +649,19 @@ html {
 .shadow-in {
   box-shadow: var(--shadow-in) !important;
 }
+
+/* ── prefers-reduced-motion: disable all bounce/rotation transitions ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .token-idle,
+  .safe-zone-pulse,
+  .move-highlight-pulse {
+    animation: none !important;
+  }
+}
