@@ -27,6 +27,18 @@ const SHOP_ITEMS = [
   { id: 'token_fire',    cat: 'tokens', skinKey: 'fire',    cosmeticKey: 'tokenSkin', price: 2200, rarity: 'legendary', label: 'Flame Tokens' },
   { id: 'token_metal',   cat: 'tokens', skinKey: 'metal',   cosmeticKey: 'tokenSkin', price: 1000, rarity: 'rare',      label: 'Metal Crown Tokens' },
   { id: 'token_emoji',   cat: 'tokens', skinKey: 'emoji',   cosmeticKey: 'tokenSkin', price: 400,  rarity: 'common',    label: 'Emoji Crew Tokens' },
+  // Banners
+  { id: 'banner_inferno', cat: 'banners', skinKey: 'banner_inferno', cosmeticKey: 'bannerId', price: 600, rarity: 'epic', label: 'Inferno Banner' },
+  { id: 'banner_plasma', cat: 'banners', skinKey: 'banner_plasma', cosmeticKey: 'bannerId', price: 400, rarity: 'rare', label: 'Plasma Banner' },
+  { id: 'banner_void', cat: 'banners', skinKey: 'banner_void', cosmeticKey: 'bannerId', price: 1000, rarity: 'legendary', label: 'Void Flame Banner' },
+  // Avatar Rings
+  { id: 'frame_ember', cat: 'avatarFrames', skinKey: 'frame_ember', cosmeticKey: 'avatarFrameId', price: 300, rarity: 'rare', label: 'Ember Ring' },
+  { id: 'frame_solar', cat: 'avatarFrames', skinKey: 'frame_solar', cosmeticKey: 'avatarFrameId', price: 500, rarity: 'epic', label: 'Solar Ring' },
+  { id: 'frame_galaxy', cat: 'avatarFrames', skinKey: 'frame_galaxy', cosmeticKey: 'avatarFrameId', price: 800, rarity: 'legendary', label: 'Galaxy Ring' },
+  // Backgrounds
+  { id: 'bg_lava', cat: 'backgrounds', skinKey: 'bg_lava', cosmeticKey: 'backgroundId', price: 500, rarity: 'rare', label: 'Lava Field' },
+  { id: 'bg_deepspace', cat: 'backgrounds', skinKey: 'bg_deepspace', cosmeticKey: 'backgroundId', price: 750, rarity: 'epic', label: 'Deep Space' },
+  { id: 'bg_antigravity', cat: 'backgrounds', skinKey: 'bg_antigravity', cosmeticKey: 'backgroundId', price: 1200, rarity: 'legendary', label: 'Antigravity Core' }
 ];
 
 const RARITY = {
@@ -39,6 +51,9 @@ const RARITY = {
 
 const CATS = [
   { id: 'all',    label: 'All',    icon: '🛒' },
+  { id: 'banners', label: 'Banners', icon: '🔥' },
+  { id: 'avatarFrames', label: 'Avatar Rings', icon: '💫' },
+  { id: 'backgrounds', label: 'Backgrounds', icon: '🌌' },
   { id: 'dice',   label: 'Dice',   icon: '🎲' },
   { id: 'board',  label: 'Board',  icon: '🏁' },
   { id: 'tokens', label: 'Tokens', icon: '♟️' },
@@ -58,6 +73,27 @@ const Preview = ({ cat, skinKey }) => {
         ))}
       </div>
     );
+  }
+  if (cat === 'banners') {
+    let bg = 'linear-gradient(90deg, #222, #111)';
+    if (skinKey === 'banner_inferno') bg = 'linear-gradient(90deg, #FF4500, #8B0000)';
+    if (skinKey === 'banner_plasma') bg = 'linear-gradient(90deg, #00BFFF, #8A2BE2)';
+    if (skinKey === 'banner_void') bg = 'linear-gradient(90deg, #4B0082, #000000)';
+    return <div style={{ width: 52, height: 52, borderRadius: 12, background: bg }} />;
+  }
+  if (cat === 'avatarFrames') {
+    let bc = '#FFD700';
+    if (skinKey === 'frame_ember') bc = '#FF4500';
+    if (skinKey === 'frame_solar') bc = '#FF8C00';
+    if (skinKey === 'frame_galaxy') bc = '#8A2BE2';
+    return <div style={{ width: 52, height: 52, borderRadius: '50%', border: `3px solid ${bc}`, background: `radial-gradient(circle at 30% 30%, ${bc}55, #111)` }} />;
+  }
+  if (cat === 'backgrounds') {
+    let bg = '#111';
+    if (skinKey === 'bg_lava') bg = 'linear-gradient(180deg, #FF4500, #000)';
+    if (skinKey === 'bg_deepspace') bg = 'linear-gradient(180deg, #4B0082, #000)';
+    if (skinKey === 'bg_antigravity') bg = 'linear-gradient(180deg, #00FFFF, #000)';
+    return <div style={{ width: 52, height: 52, borderRadius: 12, background: bg }} />;
   }
   if (cat === 'board') {
     const s = BOARD_SKINS[skinKey];

@@ -4,8 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit3, Save, X, Trophy, Coins, Camera, Swords, Clock, Star, BarChart2, Award, Settings, Grid, UserPlus, Check } from 'lucide-react';
 
 import { useGameStore } from '../store/gameStore';
-
 import AvatarSelector from '../components/ui/AvatarSelector';
+import { AnimatedBanner } from '../components/cosmetics/AnimatedBanners';
+import { AnimatedAvatarFrame } from '../components/cosmetics/AnimatedAvatarFrames';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -54,7 +55,7 @@ const StatCard = ({ value, label, color, delay = 0 }) => (
 const ProfilePage = () => {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser, token, addToast, updateUserProfile, toggleSettings } = useGameStore();
+  const { user: currentUser, token, addToast, updateUserProfile, toggleSettings, cosmetics: myCosmetics } = useGameStore();
 
   const targetUid = uid || currentUser?.uid;
   const isOwnProfile = !uid || uid === currentUser?.uid;
@@ -207,9 +208,18 @@ const ProfilePage = () => {
       </div>
 
       {/* ── Hero Banner ─────────────────────────────────────────── */}
-      <div style={{ position: 'relative', height: 200, background: `linear-gradient(135deg, hsl(348,65%,24%) 0%, hsl(220,70%,22%) 50%, hsl(40,70%,28%) 100%)`, overflow: 'hidden' }}>
-        {/* Shimmer overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0px, transparent 14px, rgba(255,215,0,0.03) 14px, rgba(255,215,0,0.03) 15px)' }} />
+      <div style={{ position: 'relative', height: 200, overflow: 'hidden' }}>
+        {/* Animated banner background */}
+        {isOwnProfile && myCosmetics?.bannerId ? (
+          <div style={{ position:'absolute', inset:0 }}>
+            <AnimatedBanner bannerId={myCosmetics.bannerId} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.6))' }} />
+          </div>
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, hsl(348,65%,24%) 0%, hsl(220,70%,22%) 50%, hsl(40,70%,28%) 100%)` }}>
+            <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(45deg,transparent 0px,transparent 14px,rgba(255,215,0,0.03) 14px,rgba(255,215,0,0.03) 15px)' }} />
+          </div>
+        )}
 
         {/* Back button */}
         <motion.button
@@ -264,14 +274,22 @@ const ProfilePage = () => {
         >
           {/* Avatar + Name Row */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 18, alignItems: 'flex-end' }}>
-            {/* Avatar */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <motion.div
-                whileHover={isOwnProfile ? { scale: 1.05 } : {}}
-                style={{ width: 88, height: 88, borderRadius: '50%', border: `3px solid ${rank.color}`, boxShadow: `0 0 20px ${rank.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, background: `radial-gradient(circle at 38% 38%, ${profile.avatarConfig?.bgColor || '#8B6000'}55, ${profile.avatarConfig?.bgColor || '#3C2A1E'})` }}
-              >
-                {profile.avatarConfig?.icon || profile.username?.[0]?.toUpperCase()}
-              </motion.div>
+            {/* Animated Avatar Frame */}
+            <div style={{ position: 'relative', flexShrink: 0, marginTop: -44 }}>
+              {isOwnProfile && myCosmetics?.avatarFrameId ? (
+                <AnimatedAvatarFrame
+                  frameId={myCosmetics.avatarFrameId}
+                  initial={profile.avatarConfig?.icon || profile.username?.[0]?.toUpperCase() || '?'}
+                  size={88}
+                />
+              ) : (
+                <motion.div
+                  whileHover={isOwnProfile ? { scale: 1.05 } : {}}
+                  style={{ width: 88, height: 88, borderRadius: '50%', border: `3px solid ${rank.color}`, boxShadow: `0 0 20px ${rank.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, background: `radial-gradient(circle at 38% 38%, ${profile.avatarConfig?.bgColor || '#8B6000'}55, ${profile.avatarConfig?.bgColor || '#3C2A1E'})` }}
+                >
+                  {profile.avatarConfig?.icon || profile.username?.[0]?.toUpperCase()}
+                </motion.div>
+              )}
               {isOwnProfile && (
                 <motion.button
                   whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}

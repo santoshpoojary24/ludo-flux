@@ -43,6 +43,9 @@ export const useGameStore = create(
         diceSkin:  'classic',
         boardSkin: 'walnut',
         tokenSkin: 'jewel',
+        bannerId: null,
+        avatarFrameId: null,
+        backgroundId: null
       },
 
       // Toasts (global notifications)
