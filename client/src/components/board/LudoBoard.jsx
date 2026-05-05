@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore';
 import Token from './Token';
-import { BOARD_SKINS } from '../../pages/CollectionPage';
+import { BOARD_THEMES } from './boardThemes';
 
 
 /* ── Board constants ────────────────────────────────────────────────────────── */
@@ -56,7 +56,8 @@ const getCoord = (color, pos) => {
 const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
   const { gameState, user, settings, cosmetics } = useGameStore();
   const boardSkinId = cosmetics?.boardSkin || 'walnut';
-  const boardSkin   = BOARD_SKINS[boardSkinId] || BOARD_SKINS.walnut;
+  const theme       = BOARD_THEMES[boardSkinId] || BOARD_THEMES.walnut;
+  const quadColors  = theme.quadrant; // per-color overrides
   const [captureFlash, setCaptureFlash] = useState(null);
   const [visualTokens, setVisualTokens] = useState(null);
   const prevTokens = useRef(null);
@@ -212,39 +213,29 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         width: 'clamp(300px, 94vw, 490px)',
         height: 'clamp(300px, 94vw, 490px)',
         position: 'relative',
-        background: boardSkin.bg,
-        borderRadius: 22,
+        background: theme.boardBg,
+        borderRadius: theme.borderRadius,
         overflow: 'hidden',
-        boxShadow: `
-          0 0 0 3px rgba(255,215,0,0.25),
-          0 0 0 6px rgba(0,0,0,0.5),
-          0 28px 60px rgba(0,0,0,0.7),
-          0 8px 24px rgba(0,0,0,0.5),
-          inset 0 2px 8px rgba(255,215,0,0.12)
-        `,
-        border: '2px solid rgba(255,215,0,0.3)',
+        boxShadow: theme.boxShadow,
+        border: theme.boardBorder,
         userSelect: 'none',
         flexShrink: 0,
         transform: `rotate(${boardRotation}deg)`,
         transformOrigin: 'center',
-        transition: 'transform 0.55s cubic-bezier(0.34,1.2,0.64,1), background 0.6s ease',
-
+        transition: 'transform 0.55s cubic-bezier(0.34,1.2,0.64,1), background 0.5s ease',
       }}
     >
-      {/* ── Subtle wood grain texture overlay ──────────────────────────────── */}
+      {/* ── Theme texture overlay ─────────────────────────────────────────── */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-        backgroundImage: `repeating-linear-gradient(
-          88deg,
-          transparent 0px, transparent 12px,
-          rgba(255,255,255,0.018) 12px, rgba(255,255,255,0.018) 13px
-        )`,
+        backgroundImage: theme.texture,
+        transition: 'background-image 0.5s ease',
       }} />
 
       {/* ── Coloured gem-tone quadrant backgrounds (staggered fade-in) ────── */}
       {COLORS.map((color, qi) => {
         const o = BASE_ORIGIN[color];
-        const qc = QUAD_COLORS[color];
+        const qc = quadColors[color] || QUAD_COLORS[color];
         return (
           <motion.div
             key={color}
@@ -258,15 +249,10 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
               width:  `${CELL * 6}%`,
               height: `${CELL * 6}%`,
               /* Radial gem gradient with glassy sheen */
-              background: `
-                radial-gradient(ellipse at 28% 28%, ${qc.light} 0%, ${qc.bg} 55%, rgba(0,0,0,0.4) 100%)
-              `,
-              boxShadow: `
-                inset 2px 2px 10px rgba(255,255,255,0.18),
-                inset -4px -4px 14px rgba(0,0,0,0.55),
-                0 0 20px ${qc.glow}
-              `,
-              border: '1.5px solid rgba(255,255,255,0.12)',
+              background: `radial-gradient(ellipse at 28% 28%, ${qc.light} 0%, ${qc.bg} 55%, rgba(0,0,0,0.3) 100%)`,
+              boxShadow: `inset 2px 2px 10px rgba(255,255,255,0.18), inset -4px -4px 14px rgba(0,0,0,0.45), 0 0 20px ${qc.glow}`,
+              border: '1.5px solid rgba(255,255,255,0.14)',
+              transition: 'background 0.5s ease',
               borderRadius: '14px',
               zIndex: 1,
             }}
@@ -364,10 +350,11 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
               width: `${CELL}%`, height: `${CELL}%`,
               /* Warm ivory/cream for normal cells; tinted for safe zones */
               background: isSafe
-                ? `var(--token-${sc})22`
-                : 'linear-gradient(145deg, #FFF8F0, #EDE0D0)',
-              border: `1px solid ${isSafe ? `var(--token-${sc})88` : 'rgba(160,120,80,0.3)'}`,
-              boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.7), inset -1px -1px 2px rgba(0,0,0,0.08)',
+                ? `var(--token-${sc})${theme.safeTint}`
+                : theme.cellBg,
+              border: `1px solid ${isSafe ? `var(--token-${sc})88` : theme.cellBorder}`,
+              boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.5), inset -1px -1px 2px rgba(0,0,0,0.1)',
+              transition: 'background 0.4s ease',
               boxSizing: 'border-box',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 3,
@@ -424,7 +411,7 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
             var(--token-blue)   270deg 360deg
           )`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: 'inset 0 0 12px rgba(255,255,255,0.4), inset 0 0 24px rgba(0,0,0,0.3), 0 0 20px rgba(255,215,0,0.3)',
+          boxShadow: `inset 0 0 12px rgba(255,255,255,0.4), inset 0 0 24px rgba(0,0,0,0.3), 0 0 20px ${theme.centerGlow}`,
         }}>
           {/* Inner circle with HOME label */}
           <div style={{

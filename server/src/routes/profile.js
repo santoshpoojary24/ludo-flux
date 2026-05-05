@@ -833,7 +833,7 @@ authProfileRouter.post('/convert-guest', authMiddleware, async (req, res) => {
 
 authProfileRouter.patch('/username', authMiddleware, async (req, res) => {
   const { username } = req.body;
-  if (!validateUsername(username)) {
+  if (!USERNAME_REGEX.test(username)) {
     return res.status(400).json({ error: 'Invalid username' });
   }
 

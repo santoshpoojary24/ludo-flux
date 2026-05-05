@@ -64,6 +64,10 @@ const ProfilePage = () => {
   const [matches, setMatches] = useState([]);
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modals / Edit states
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [showRankModal, setShowRankModal] = useState(false);
   const [activeTab, setActiveTab] = useState('stats');
   const [editingStatus, setEditingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState('');
@@ -283,11 +287,18 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* ELO Progress bar */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: '#A08060', fontFamily: "'Quicksand', sans-serif", letterSpacing: 1 }}>RANK PROGRESS</span>
-              <span style={{ fontSize: 10, color: rank.color, fontWeight: 700, fontFamily: "'Quicksand', sans-serif" }}>{rank.icon} {rank.name}</span>
+          {/* ELO Progress bar (Clickable) */}
+          <motion.div
+            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+            onClick={() => setShowRankModal(true)}
+            style={{ marginBottom: 16, cursor: 'pointer', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: 16, border: '1px solid rgba(255,215,0,0.05)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, color: '#A08060', fontFamily: "'Quicksand', sans-serif", letterSpacing: 1 }}>RANK PROGRESS</span>
+                <span style={{ fontSize: 10, color: '#FFD700', opacity: 0.7 }}>(Tap to view all)</span>
+              </div>
+              <span style={{ fontSize: 13, color: rank.color, fontWeight: 800, fontFamily: "'Quicksand', sans-serif" }}>{rank.icon} {rank.name}</span>
             </div>
             <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 999, overflow: 'hidden' }}>
               <motion.div
@@ -297,7 +308,7 @@ const ProfilePage = () => {
                 style={{ height: '100%', background: `linear-gradient(90deg, ${rank.color}88, ${rank.color})`, borderRadius: 999, boxShadow: `0 0 8px ${rank.color}88` }}
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Status */}
           <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '12px 14px', marginBottom: 16, border: '1px solid rgba(255,215,0,0.08)' }}>
@@ -447,6 +458,53 @@ const ProfilePage = () => {
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => { setEditingUsername(false); setUsernameError(''); }}
                   style={{ flex: 1, padding: '13px', borderRadius: 12, border: '1px solid rgba(255,215,0,0.2)', background: 'transparent', color: '#A08060', fontFamily: "'Quicksand', sans-serif", fontWeight: 700, cursor: 'pointer', fontSize: 13 }}
                 >Cancel</motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Rank Tiers Modal ────────────────────────────────────── */}
+      <AnimatePresence>
+        {showRankModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+            onClick={() => setShowRankModal(false)}
+          >
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'rgba(30,22,15,0.95)', border: '1px solid rgba(255,215,0,0.25)', borderRadius: 24, padding: 28, maxWidth: 360, width: '100%', boxShadow: '0 0 0 1px rgba(255,215,0,0.1), 0 32px 64px rgba(0,0,0,0.8)', maxHeight: '80vh', overflowY: 'auto' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: 20, fontWeight: 900, color: '#FFD700', margin: 0, letterSpacing: 1 }}>RANK TIERS</h3>
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setShowRankModal(false)}
+                  style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFF' }}>
+                  <X size={16} />
+                </motion.button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {RANK_TIERS.map((tier, i) => {
+                  const isCurrent = rank.name === tier.name;
+                  return (
+                    <motion.div key={tier.name}
+                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 16px', borderRadius: 16, background: isCurrent ? `linear-gradient(90deg, ${tier.color}33, transparent)` : 'rgba(255,255,255,0.03)', border: `1px solid ${isCurrent ? tier.color : 'rgba(255,255,255,0.05)'}`, position: 'relative', overflow: 'hidden' }}
+                    >
+                      {isCurrent && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: tier.color }} />}
+                      <div style={{ fontSize: 28, filter: `drop-shadow(0 0 10px ${tier.color}66)` }}>{tier.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 800, fontSize: 16, color: tier.color, letterSpacing: 1 }}>{tier.name}</div>
+                        <div style={{ fontFamily: "'Quicksand', sans-serif", fontSize: 12, color: '#A08060', fontWeight: 700 }}>{tier.min} ELO+</div>
+                      </div>
+                      {isCurrent && (
+                        <div style={{ fontSize: 10, fontFamily: "'Quicksand', sans-serif", fontWeight: 800, color: tier.color, background: `${tier.color}22`, padding: '4px 8px', borderRadius: 8, letterSpacing: 1 }}>
+                          YOU
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>
