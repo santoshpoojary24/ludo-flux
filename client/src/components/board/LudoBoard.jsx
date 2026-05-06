@@ -55,8 +55,8 @@ const getCoord = (color, pos) => {
 /* ── Main Board ─────────────────────────────────────────────────────────────── */
 const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
   const { gameState, user, settings, cosmetics } = useGameStore();
-  const boardSkinId = cosmetics?.boardSkin || 'walnut';
-  const theme       = BOARD_THEMES[boardSkinId] || BOARD_THEMES.walnut;
+  const boardSkinId = cosmetics?.boardSkin || 'ludoKing';
+  const theme       = BOARD_THEMES[boardSkinId] || BOARD_THEMES.ludoKing;
   const quadColors  = theme.quadrant; // per-color overrides
   const [captureFlash, setCaptureFlash] = useState(null);
   const [visualTokens, setVisualTokens] = useState(null);
@@ -210,8 +210,8 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
       animate={{ scale: 1,    opacity: 1 }}
       transition={{ type: 'spring', stiffness: 140, damping: 22, delay: 0.05 }}
       style={{
-        width: 'clamp(300px, 94vw, 490px)',
-        height: 'clamp(300px, 94vw, 490px)',
+        width: 'clamp(300px, 94vw, 520px)',
+        height: 'clamp(300px, 94vw, 520px)',
         position: 'relative',
         background: theme.boardBg,
         borderRadius: theme.borderRadius,
@@ -232,6 +232,28 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
         transition: 'background-image 0.5s ease',
       }} />
 
+      {/* ── Ludo King gold inner frame ────────────────────────────────────── */}
+      {theme.isLudoKing && (
+        <div style={{
+          position:'absolute', inset:'3px', zIndex:0, pointerEvents:'none',
+          border:'2px solid rgba(201,168,76,0.55)',
+          borderRadius:'17px',
+          boxShadow:'inset 0 0 20px rgba(255,215,0,0.08)',
+        }}>
+          {/* Corner diamond ornaments */}
+          {[{t:'3px',l:'3px'},{t:'3px',r:'3px'},{b:'3px',l:'3px'},{b:'3px',r:'3px'}].map((pos,i) => (
+            <div key={i} style={{
+              position:'absolute', width:'14px', height:'14px',
+              background:'#C9A84C',
+              clipPath:'polygon(50% 0%,100% 50%,50% 100%,0% 50%)',
+              animation:'cornerOrn 20s linear infinite',
+              animationDelay:`${i*5}s`,
+              ...pos,
+            }} />
+          ))}
+        </div>
+      )}
+
       {/* ── Coloured gem-tone quadrant backgrounds (staggered fade-in) ────── */}
       {COLORS.map((color, qi) => {
         const o = BASE_ORIGIN[color];
@@ -248,22 +270,43 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
               top:    `${o.r * CELL}%`,
               width:  `${CELL * 6}%`,
               height: `${CELL * 6}%`,
-              /* Radial gem gradient with glassy sheen */
-              background: `radial-gradient(ellipse at 28% 28%, ${qc.light} 0%, ${qc.bg} 55%, rgba(0,0,0,0.3) 100%)`,
-              boxShadow: `inset 2px 2px 10px rgba(255,255,255,0.18), inset -4px -4px 14px rgba(0,0,0,0.45), 0 0 20px ${qc.glow}`,
+              background: theme.isLudoKing
+                ? `linear-gradient(145deg, ${qc.light} 0%, ${qc.bg} 50%, ${qc.dark||qc.bg} 100%)`
+                : `radial-gradient(ellipse at 28% 28%, ${qc.light} 0%, ${qc.bg} 55%, rgba(0,0,0,0.3) 100%)`,
+              boxShadow: theme.isLudoKing
+                ? `inset 0 0 28px rgba(0,0,0,0.3), 0 0 18px ${qc.glow}`
+                : `inset 2px 2px 10px rgba(255,255,255,0.18), inset -4px -4px 14px rgba(0,0,0,0.45), 0 0 20px ${qc.glow}`,
               border: '1.5px solid rgba(255,255,255,0.14)',
               transition: 'background 0.5s ease',
               borderRadius: '14px',
               zIndex: 1,
             }}
           >
-            {/* Inner glassy sheen */}
+            {/* Gloss shine at top */}
             <div style={{
-              position: 'absolute', top: '6%', left: '8%',
-              width: '60%', height: '40%', borderRadius: '50%',
-              background: 'radial-gradient(ellipse, rgba(255,255,255,0.18) 0%, transparent 100%)',
-              pointerEvents: 'none',
+              position:'absolute', top:0, left:0, right:0, height:'45%',
+              background:'linear-gradient(180deg,rgba(255,255,255,0.24) 0%,transparent 100%)',
+              borderRadius:'14px 14px 0 0', pointerEvents:'none',
             }} />
+            {/* Inner white home square for Ludo King */}
+            {theme.isLudoKing && (
+              <div style={{
+                position:'absolute', top:'13%', left:'13%',
+                width:'74%', height:'74%',
+                background: qc.home || '#FFFFFF',
+                borderRadius:'10px',
+                border:`2px solid ${qc.bg}88`,
+                boxShadow:'inset 0 3px 10px rgba(255,255,255,0.8), inset 0 -2px 8px rgba(0,0,0,0.06)',
+                overflow:'hidden',
+              }}>
+                <div style={{
+                  position:'absolute', top:'5%', left:'8%',
+                  width:'55%', height:'40%', borderRadius:'50%',
+                  background:'radial-gradient(ellipse,rgba(255,255,255,0.6) 0%,transparent 100%)',
+                  pointerEvents:'none',
+                }} />
+              </div>
+            )}
           </motion.div>
         );
       })}
@@ -290,13 +333,16 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
                 transform: 'translate(-50%,-50%)',
                 borderRadius: '50%',
                 background: inBase
-                  ? 'radial-gradient(circle, rgba(255,255,255,0.22), rgba(0,0,0,0.3))'
-                  : 'radial-gradient(circle, rgba(0,0,0,0.5), rgba(0,0,0,0.2))',
+                  ? `radial-gradient(circle at 38% 35%, rgba(255,255,255,0.35), rgba(0,0,0,0.28))`
+                  : 'radial-gradient(circle, rgba(0,0,0,0.55), rgba(0,0,0,0.22))',
                 boxShadow: inBase
-                  ? 'inset 1px 1px 4px rgba(255,255,255,0.5), 0 4px 12px rgba(0,0,0,0.2)'
+                  ? `inset 0 2px 5px rgba(255,255,255,0.55), 0 4px 12px rgba(0,0,0,0.25), 0 0 ${theme.isLudoKing ? '10px' : '6px'} var(--token-${color})44`
                   : 'inset 3px 3px 8px rgba(0,0,0,0.7)',
-                border: '1px solid rgba(255,255,255,0.2)',
+                border: theme.isLudoKing
+                  ? `2px solid rgba(255,255,255,0.35)`
+                  : '1px solid rgba(255,255,255,0.2)',
                 zIndex: 2,
+                animation: inBase && theme.isLudoKing ? `slotPulse-${color} 2s ease-in-out infinite` : 'none',
               }} />
               {/* Token in base */}
               {inBase && (
@@ -348,28 +394,34 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
               position: 'absolute',
               left: `${coord.c * CELL}%`, top: `${coord.r * CELL}%`,
               width: `${CELL}%`, height: `${CELL}%`,
-              /* Warm ivory/cream for normal cells; tinted for safe zones */
               background: isSafe
-                ? `var(--token-${sc})${theme.safeTint}`
-                : theme.cellBg,
-              border: `1px solid ${isSafe ? `var(--token-${sc})88` : theme.cellBorder}`,
-              boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.5), inset -1px -1px 2px rgba(0,0,0,0.1)',
+                ? (theme.isLudoKing ? '#FFF8E7' : `var(--token-${sc})${theme.safeTint}`)
+                : (theme.isLudoKing ? 'linear-gradient(180deg,rgba(255,255,255,0.5) 0%,#F5F0E8 50%)' : theme.cellBg),
+              border: `${theme.isLudoKing ? '0.5px' : '1px'} solid ${isSafe ? `var(--token-${sc})88` : theme.cellBorder}`,
+              boxShadow: theme.isLudoKing
+                ? 'inset 0 1px 2px rgba(255,255,255,0.6)'
+                : 'inset 1px 1px 3px rgba(255,255,255,0.5), inset -1px -1px 2px rgba(0,0,0,0.1)',
               transition: 'background 0.4s ease',
               boxSizing: 'border-box',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 3,
             }}
           >
-            {/* Safe zone star icon */}
-            {isSafe && (
-              <div style={{
-                width: '54%', height: '54%',
-                background: `var(--token-${sc})`,
-                clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)',
-                opacity: 0.75,
-                filter: `drop-shadow(0 0 3px var(--token-${sc}))`,
-              }} />
-            )}
+          {isSafe && (
+            <div style={{
+              width: '62%', height: '62%',
+              background: theme.isLudoKing
+                ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 55%, #FFD700 100%)'
+                : `var(--token-${sc})`,
+              clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)',
+              opacity: theme.isLudoKing ? 0.92 : 0.75,
+              filter: theme.isLudoKing
+                ? 'drop-shadow(0 0 5px rgba(255,215,0,0.8)) drop-shadow(0 1px 3px rgba(0,0,0,0.3))'
+                : `drop-shadow(0 0 3px var(--token-${sc}))`,
+              animation: theme.isLudoKing ? 'goldStarSpin 8s linear infinite' : 'none',
+              flexShrink: 0,
+            }} />
+          )}
           </div>
         );
       })}
@@ -381,20 +433,32 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
             position: 'absolute',
             left: `${coord.c * CELL}%`, top: `${coord.r * CELL}%`,
             width: `${CELL}%`, height: `${CELL}%`,
-            /* Gradient brightens as it approaches home — simulates a sparkle trail */
-            background: `linear-gradient(135deg,
-              color-mix(in srgb, var(--token-${color}) 55%, #1a0a00),
-              color-mix(in srgb, var(--token-${color}) 80%, white))`,
-            opacity: 0.22 + i * 0.14,
+            background: theme.isLudoKing
+              ? `var(--token-${color})`
+              : `linear-gradient(135deg,
+                color-mix(in srgb, var(--token-${color}) 55%, #1a0a00),
+                color-mix(in srgb, var(--token-${color}) 80%, white))`,
+            opacity: theme.isLudoKing ? (0.65 + i * 0.07) : (0.22 + i * 0.14),
             boxSizing: 'border-box',
-            border: '1px solid rgba(255,255,255,0.15)',
-            boxShadow: `inset 1px 1px 4px rgba(255,255,255,0.3), 0 0 6px var(--token-${color})44`,
+            border: theme.isLudoKing
+              ? '0.5px solid rgba(255,255,255,0.25)'
+              : '1px solid rgba(255,255,255,0.15)',
+            boxShadow: theme.isLudoKing
+              ? 'inset 0 0 0 100% linear-gradient(180deg,rgba(255,255,255,0.18) 0%,rgba(0,0,0,0.12) 100%)'
+              : `inset 1px 1px 4px rgba(255,255,255,0.3), 0 0 6px var(--token-${color})44`,
             zIndex: 3,
-          }} />
+            overflow: 'hidden',
+          }}>
+            {theme.isLudoKing && (
+              <div style={{
+                position:'absolute', top:0, left:0, right:0, height:'50%',
+                background:'rgba(255,255,255,0.16)', pointerEvents:'none',
+              }} />
+            )}
+          </div>
         ))
       )}
 
-      {/* ── Centre HOME tile ───────────────────────────────────────────────── */}
       <div style={{
         position: 'absolute',
         left: `${7 * CELL}%`, top: `${7 * CELL}%`,
@@ -404,30 +468,60 @@ const LudoBoard = ({ onMoveToken, myColor: myColorProp }) => {
       }}>
         <div style={{
           width: '100%', height: '100%',
-          background: `conic-gradient(
-            var(--token-red)    0   90deg,
-            var(--token-green)  90deg 180deg,
-            var(--token-yellow) 180deg 270deg,
-            var(--token-blue)   270deg 360deg
-          )`,
+          background: theme.isLudoKing
+            ? 'radial-gradient(circle, #2A1042 0%, #1B0A2E 100%)'
+            : `conic-gradient(
+              var(--token-red)    0   90deg,
+              var(--token-green)  90deg 180deg,
+              var(--token-yellow) 180deg 270deg,
+              var(--token-blue)   270deg 360deg
+            )`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `inset 0 0 12px rgba(255,255,255,0.4), inset 0 0 24px rgba(0,0,0,0.3), 0 0 20px ${theme.centerGlow}`,
+          boxShadow: `inset 0 0 12px rgba(255,255,255,0.3), 0 0 20px ${theme.centerGlow}`,
+          overflow: 'hidden',
+          position: 'relative',
         }}>
-          {/* Inner circle with HOME label */}
+          {/* Conic triangles for ludoKing */}
+          {theme.isLudoKing && (
+            <div style={{
+              position:'absolute', inset:0,
+              background:`conic-gradient(
+                var(--token-red)88    0   90deg,
+                var(--token-green)88  90deg 180deg,
+                var(--token-yellow)88 180deg 270deg,
+                var(--token-blue)88   270deg 360deg
+              )`,
+            }} />
+          )}
+          {/* Gold divider lines for ludoKing */}
+          {theme.isLudoKing && <>
+            <div style={{position:'absolute',top:0,left:'50%',width:'1px',height:'100%',background:'rgba(255,215,0,0.6)',transform:'translateX(-50%)'}} />
+            <div style={{position:'absolute',top:'50%',left:0,width:'100%',height:'1px',background:'rgba(255,215,0,0.6)',transform:'translateY(-50%)'}} />
+          </>}
+          {/* Crown / Home label */}
           <div style={{
-            width: '46%', height: '46%', borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 38%, #fff9e6, #c8a000)',
+            width: theme.isLudoKing ? '52%' : '46%',
+            height: theme.isLudoKing ? '52%' : '46%',
+            borderRadius: '50%',
+            background: theme.isLudoKing
+              ? 'radial-gradient(circle at 40% 35%, #fffbe0, #C9A84C)'
+              : 'radial-gradient(circle at 40% 38%, #fff9e6, #c8a000)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 1px 1px 4px rgba(255,255,255,0.6)',
+            boxShadow: theme.isLudoKing
+              ? '0 0 12px rgba(255,215,0,0.6), 0 4px 12px rgba(0,0,0,0.5), inset 1px 1px 4px rgba(255,255,255,0.7)'
+              : '0 4px 12px rgba(0,0,0,0.4), inset 1px 1px 4px rgba(255,255,255,0.6)',
+            position: 'relative', zIndex: 2,
+            animation: theme.isLudoKing ? 'crownBob 3s ease-in-out infinite' : 'none',
           }}>
             <span style={{
-              color: '#5c3200', fontWeight: 900,
-              fontFamily: "'Cinzel', serif",
-              fontSize: 'clamp(4px, 0.75vw, 7px)',
-              letterSpacing: 1,
+              fontSize: theme.isLudoKing ? 'clamp(5px, 1vw, 9px)' : 'clamp(4px, 0.75vw, 7px)',
+              lineHeight: 1,
             }}>
-              HOME
+              {theme.isLudoKing ? '👑' : ''}
             </span>
+            {!theme.isLudoKing && (
+              <span style={{ color:'#5c3200', fontWeight:900, fontFamily:"'Cinzel',serif", fontSize:'clamp(4px,0.75vw,7px)', letterSpacing:1 }}>HOME</span>
+            )}
           </div>
         </div>
       </div>

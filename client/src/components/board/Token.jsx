@@ -86,6 +86,8 @@ const Token = ({
     filter: `drop-shadow(0 1px 3px rgba(0,0,0,0.4))`,
   };
 
+  const isPawn = skinId === 'jewel';
+
   return (
     <motion.div
       onClick={onClick}
@@ -107,51 +109,82 @@ const Token = ({
         transformOrigin: 'center',
       }}
     >
-      {/* ── Main body ─────────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        borderRadius: skinStyle.borderRadius,
-        filter: skinStyle.filter || 'none',
-        background: `radial-gradient(circle at 40% 38%,
-          ${theme.highlight} 0%,
-          ${theme.mid} 35%,
-          ${theme.base} 60%,
-          ${theme.shadow} 85%,
-          ${theme.rim} 100%)`,
-        boxShadow: `
-          inset 3px 3px 6px rgba(255,255,255,0.35),
-          inset -3px -3px 6px rgba(0,0,0,0.5),
-          0 6px 16px rgba(0,0,0,0.45),
-          0 2px 4px rgba(0,0,0,0.3)
-        `,
-        border: `1.5px solid ${theme.rim}`,
-      }} />
-
-      {/* ── Specular highlight ─────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute', top: '12%', left: '14%',
-        width: '32%', height: '28%', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)',
-        transform: 'rotate(-20deg)', pointerEvents: 'none',
-      }} />
-
-      {/* ── Centre detail (gem facet / emoji / symbol) ─────────────── */}
-      {skinId === 'emoji' ? (
-        <div style={{
-          position: 'relative', zIndex: 1,
-          fontSize: `calc(${tokenSize} * 0.42)`,
-          lineHeight: 1, userSelect: 'none',
-        }}>
-          {EMOJI_ICONS[color] || '😊'}
+      {isPawn ? (
+        /* ── Ludo King pawn shape ─────────────────────────────────────── */
+        <div style={{ position:'relative', width:'62%', height:'80%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
+          {/* Head — round gem ball */}
+          <div style={{
+            width:'58%', height:'38%',
+            borderRadius:'50%',
+            background:`radial-gradient(circle at 35% 30%, ${theme.highlight} 0%, ${theme.mid} 45%, ${theme.base} 70%, ${theme.shadow} 100%)`,
+            boxShadow:`inset 2px 2px 5px rgba(255,255,255,0.4), inset -2px -2px 5px rgba(0,0,0,0.5), 0 3px 8px rgba(0,0,0,0.45), 0 0 8px ${theme.glow}`,
+            border:`1.5px solid ${theme.rim}`,
+            position:'relative', flexShrink:0,
+          }}>
+            {/* Shine dot */}
+            <div style={{ position:'absolute', top:'18%', left:'20%', width:'28%', height:'24%', borderRadius:'50%', background:'rgba(255,255,255,0.6)' }} />
+          </div>
+          {/* Neck */}
+          <div style={{
+            width:'22%', height:'14%',
+            background:`linear-gradient(180deg, ${theme.mid} 0%, ${theme.base} 100%)`,
+            flexShrink:0,
+          }} />
+          {/* Base — wide skirt */}
+          <div style={{
+            width:'100%', height:'44%',
+            borderRadius:'50% 50% 28% 28% / 55% 55% 30% 30%',
+            background:`linear-gradient(180deg, ${theme.base} 0%, ${theme.shadow} 100%)`,
+            boxShadow:`0 4px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.28)`,
+            border:`1.5px solid ${theme.rim}`,
+            flexShrink:0,
+          }}>
+            <div style={{ position:'absolute', top:'5%', left:'12%', right:'12%', height:'35%', borderRadius:'50%', background:'rgba(255,255,255,0.15)' }} />
+          </div>
         </div>
       ) : (
-        <div style={{
-          width: '30%', height: '30%', borderRadius: skinStyle.borderRadius === '30%' ? '20%' : '50%',
-          background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), ${theme.shadow}88)`,
-          boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          position: 'relative', zIndex: 1,
-        }} />
+        <>
+          {/* ── Main body ─────────────────────────────────────────────── */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            borderRadius: skinStyle.borderRadius,
+            filter: skinStyle.filter || 'none',
+            background: `radial-gradient(circle at 40% 38%,
+              ${theme.highlight} 0%,
+              ${theme.mid} 35%,
+              ${theme.base} 60%,
+              ${theme.shadow} 85%,
+              ${theme.rim} 100%)`,
+            boxShadow: `
+              inset 3px 3px 6px rgba(255,255,255,0.35),
+              inset -3px -3px 6px rgba(0,0,0,0.5),
+              0 6px 16px rgba(0,0,0,0.45),
+              0 2px 4px rgba(0,0,0,0.3)
+            `,
+            border: `1.5px solid ${theme.rim}`,
+          }} />
+          {/* ── Specular highlight ─────────────────────────────────────── */}
+          <div style={{
+            position: 'absolute', top: '12%', left: '14%',
+            width: '32%', height: '28%', borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)',
+            transform: 'rotate(-20deg)', pointerEvents: 'none',
+          }} />
+          {/* ── Centre detail ──────────────────────────────────────────── */}
+          {skinId === 'emoji' ? (
+            <div style={{ position: 'relative', zIndex: 1, fontSize: `calc(${tokenSize} * 0.42)`, lineHeight: 1, userSelect: 'none' }}>
+              {EMOJI_ICONS[color] || '😊'}
+            </div>
+          ) : (
+            <div style={{
+              width: '30%', height: '30%', borderRadius: skinStyle.borderRadius === '30%' ? '20%' : '50%',
+              background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), ${theme.shadow}88)`,
+              boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              position: 'relative', zIndex: 1,
+            }} />
+          )}
+        </>
       )}
 
       {/* ── Clickable pulsing glow ring ────────────────────────────── */}

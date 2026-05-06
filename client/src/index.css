@@ -31,11 +31,11 @@
   --radius:      16px;
   --radius-pill: 9999px;
 
-  /* ── Player token jewel colours ───────────────── */
-  --token-red:    hsl(348, 80%, 42%);
-  --token-green:  hsl(152, 70%, 28%);
-  --token-yellow: hsl(40,  85%, 44%);
-  --token-blue:   hsl(220, 85%, 38%);
+  /* ── Player token jewel colours — Ludo King palette ──────────── */
+  --token-red:    #E8192C;
+  --token-green:  #00A550;
+  --token-yellow: #FFC107;
+  --token-blue:   #0057B8;
 
   /* ── Accent (gold) ────────────────────────────── */
   --accent: #FFD700;
@@ -433,6 +433,24 @@ body {
 }
 .safe-zone-pulse { animation: safeZoneGlow 2s infinite ease-in-out; }
 
+/* ── Ludo King gold star spin ─────────────────────────────────────────────── */
+@keyframes goldStarSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Ludo King crown bob ──────────────────────────────────────────────────── */
+@keyframes crownBob {
+  0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px rgba(255,215,0,0.5)); }
+  50%     { transform: translateY(-2px) scale(1.06); filter: drop-shadow(0 0 10px rgba(255,215,0,0.9)); }
+}
+
+/* ── Ludo King corner ornament spin ──────────────────────────────────────── */
+@keyframes cornerOrn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── Token bobbing idle animation ────────────────────────────────────────── */
 @keyframes tokenBob {
   0%, 100% { transform: translateY(0) scale(1); }
@@ -565,7 +583,10 @@ html {
   }
   .token-idle,
   .safe-zone-pulse,
-  .move-highlight-pulse {
+  .move-highlight-pulse,
+  [style*="goldStarSpin"],
+  [style*="crownBob"],
+  [style*="cornerOrn"] {
     animation: none !important;
   }
 }

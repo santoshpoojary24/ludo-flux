@@ -10,9 +10,30 @@
    - centerGlow     : home centre glow color
    - borderRadius   : corner rounding of board
    - homeSlotBg     : token slot circle style
+   - isLudoKing     : enables Ludo King special rendering mode
 ────────────────────────────────────────────────────────────────── */
 
 export const BOARD_THEMES = {
+
+  /* ── Ludo King Royal (premium default) ────────────────────── */
+  ludoKing: {
+    isLudoKing:  true,
+    boardBg:     'radial-gradient(ellipse at center, #2A1042 0%, #1B0A2E 60%, #0D0519 100%)',
+    cellBg:      'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, #F5F0E8 40%)',
+    cellBorder:  '#D4C5A0',
+    safeTint:    '22',
+    texture:     `repeating-linear-gradient(45deg, transparent 0px, transparent 4px, rgba(201,168,76,0.04) 4px, rgba(201,168,76,0.04) 5px)`,
+    boardBorder: '3px solid #C9A84C',
+    boxShadow:   '0 0 0 3px #C9A84C, 0 0 0 6px #8B6914, 0 0 40px rgba(201,168,76,0.4), 0 20px 60px rgba(0,0,0,0.9)',
+    borderRadius: 20,
+    centerGlow:  'rgba(255,215,0,0.55)',
+    quadrant: {
+      red:    { bg: '#C8112A', light: '#FF4D5E', dark: '#7A0010', glow: 'rgba(232,25,44,0.5)', home: '#FFE4E6' },
+      green:  { bg: '#007A3D', light: '#2ECC71', dark: '#003D1E', glow: 'rgba(0,165,80,0.5)',  home: '#E4FFE4' },
+      yellow: { bg: '#D4A017', light: '#FFD740', dark: '#6B4800', glow: 'rgba(255,193,7,0.5)', home: '#FFFBE4' },
+      blue:   { bg: '#0044A0', light: '#3498DB', dark: '#00205A', glow: 'rgba(0,87,184,0.5)',  home: '#E4EEFF' },
+    },
+  },
 
   /* ── Dark Walnut (default) ─────────────────────────────────── */
   walnut: {
